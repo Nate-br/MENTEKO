@@ -6,11 +6,13 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
-            <div className="flex items-center gap-2 font-mono text-sm font-semibold text-text">
-              <span className="flex h-6 w-6 items-center justify-center rounded-md border border-cyan/40 text-cyan text-xs">
-                M
-              </span>
-              MENTEKO
+            <div className="flex items-center gap-2.5 font-mono text-sm font-semibold text-text">
+              <img
+                src="/logo.png"
+                alt="Menteko Logo"
+                className="h-7 w-auto object-contain drop-shadow-[0_2px_8px_rgba(143,30,174,0.3)]"
+              />
+              <span className="font-bold tracking-wider">MENTEKO</span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-muted">
               Human-centered cybersecurity awareness and digital fraud resilience training.

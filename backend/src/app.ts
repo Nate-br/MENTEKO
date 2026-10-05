@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import fs from 'fs';
 
 import { attachUserIfPresent } from './middleware/auth.middleware';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware';
@@ -18,7 +20,11 @@ export function createApp(): Application {
 
   const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',');
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+    }),
+  );
   app.use(
     cors({
       origin: allowedOrigins,
@@ -52,6 +58,19 @@ export function createApp(): Application {
   app.use('/api/attempts', attemptRoutes);
   app.use('/api/assessments', assessmentRoutes);
   app.use('/api/users', userRoutes);
+
+  // In production (or when frontend/dist is built), serve frontend SPA
+  const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
+  if (fs.existsSync(frontendDistPath)) {
+    app.use(express.static(frontendDistPath));
+    app.use((req: Request, res: Response, next) => {
+      // Don't intercept unhandled /api calls or non-GET requests
+      if (req.method !== 'GET' || req.path.startsWith('/api')) {
+        return next();
+      }
+      res.sendFile(path.join(frontendDistPath, 'index.html'));
+    });
+  }
 
   app.use(notFoundHandler);
   app.use(errorHandler);

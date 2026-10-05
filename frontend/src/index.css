@@ -3,17 +3,19 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-display: "Orbitron", "Syne", sans-serif;
 
-  --color-bg: #070b12;
-  --color-panel: #0b1420;
-  --color-panel-2: #0e1b25;
-  --color-cyan: #21e6f3;
-  --color-green: #46e6a5;
-  --color-purple: #9b5cff;
-  --color-blue: #4a82ff;
-  --color-text: #eaf2f6;
-  --color-muted: #8293a0;
-  --color-line: #183544;
+  --color-bg: #eaecf1;
+  --color-panel: rgba(255, 255, 255, 0.75);
+  --color-panel-2: #e0e3ea;
+  --color-cyan: #8f1eae;
+  --color-primary: #8f1eae;
+  --color-green: #107e47;
+  --color-purple: #8f1eae;
+  --color-blue: #4f46e5;
+  --color-text: #0b0811;
+  --color-muted: #5b5168;
+  --color-line: rgba(143, 30, 174, 0.12);
 
   --animate-scan: scan 3s linear infinite;
   --animate-blink: blink 1.1s step-end infinite;
@@ -35,6 +37,13 @@ html {
 
 body {
   background-color: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 255, 255, 0.9) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 15% 25%, rgba(143, 30, 174, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 65%, rgba(185, 71, 219, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+    linear-gradient(180deg, #eceef3 0%, #e2e5eb 100%);
+  background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -42,13 +51,13 @@ body {
 
 ::selection {
   background: var(--color-cyan);
-  color: var(--color-bg);
+  color: #ffffff;
 }
 
 .bg-grid {
   background-image:
-    linear-gradient(to right, var(--color-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+    linear-gradient(to right, rgba(143, 30, 174, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(143, 30, 174, 0.08) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
@@ -70,3 +79,186 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Luxury Glossy Liquid Glass System */
+.glossy-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 16px 36px -8px rgba(143, 30, 174, 0.08),
+    0 4px 12px -2px rgba(0, 0, 0, 0.03),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(143, 30, 174, 0.04);
+}
+
+.nav-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 10px 30px -6px rgba(143, 30, 174, 0.07),
+    0 2px 8px -2px rgba(0, 0, 0, 0.02),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px 0 rgba(143, 30, 174, 0.05);
+}
+
+.nav-glass-scrolled {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 18px 40px -8px rgba(143, 30, 174, 0.14),
+    0 4px 12px -2px rgba(0, 0, 0, 0.04),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(143, 30, 174, 0.08);
+}
+
+@keyframes shockwave {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(143, 30, 174, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 35px rgba(143, 30, 174, 0.75));
+  }
+}
+
+.animate-shockwave {
+  animation: shockwave 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+.animate-float-slow {
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+@keyframes spinSlow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 20s linear infinite;
+}
+
+@keyframes doubleLightFlow {
+  /* Pass 1: Sweeps smoothly to the LEFT across MENTEKO */
+  0% {
+    background-position: -30% center;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  44% {
+    background-position: 130% center;
+    opacity: 1;
+  }
+  /* Turnaround pause at the left edge */
+  47% {
+    background-position: 130% center;
+    opacity: 0.9;
+  }
+  53% {
+    background-position: 130% center;
+    opacity: 1;
+  }
+  /* Pass 2: Sweeps smoothly to the RIGHT across MENTEKO after */
+  92% {
+    background-position: -30% center;
+    opacity: 1;
+  }
+  97% {
+    opacity: 0.35;
+  }
+  100% {
+    background-position: -30% center;
+    opacity: 0;
+  }
+}
+
+.animate-double-light-flow {
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    transparent 36%,
+    rgba(255, 255, 255, 0.2) 43%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(225, 140, 255, 0.9) 53%,
+    rgba(255, 255, 255, 0.2) 57%,
+    transparent 64%,
+    transparent 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: doubleLightFlow 6.0s cubic-bezier(0.42, 0.05, 0.25, 1) forwards;
+}
+
+@keyframes letterSlam {
+  0% {
+    opacity: 0;
+    transform: scale(2.2) translateY(-25px);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.92) translateY(2px);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.animate-letter-slam {
+  animation: letterSlam 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.25) forwards;
+}
+
+
+

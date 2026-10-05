@@ -6,7 +6,7 @@ export function ScenarioContentView({ scenario }: { scenario: Scenario }) {
 
   return (
     <Terminal label={`SIMULATION / ${scenario.format}`}>
-      <div className="space-y-1 border-b border-line pb-4 text-xs">
+      <div className="space-y-1 border-b border-white/10 pb-4 text-xs">
         {content.sender && <TerminalLine field="from" value={content.sender} tone="cyan" />}
         {content.subject && <TerminalLine field="subject" value={content.subject} />}
         {content.meta &&
@@ -15,11 +15,11 @@ export function ScenarioContentView({ scenario }: { scenario: Scenario }) {
           ))}
       </div>
 
-      <p className="mt-4 text-[15px] leading-relaxed text-text font-sans">{content.body}</p>
+      <p className="mt-4 text-[15px] leading-relaxed text-[#ece5f5] font-sans">{content.body}</p>
 
       {content.callToAction && (
         <div className="mt-5">
-          <span className="inline-block rounded-md border border-cyan/40 bg-cyan/10 px-4 py-2 font-mono text-xs tracking-wide text-cyan">
+          <span className="inline-block rounded-md border border-cyan/40 bg-cyan/15 px-4 py-2 font-mono text-xs tracking-wide text-[#d672ff] shadow-[0_0_12px_rgba(143,30,174,0.25)]">
             {content.callToAction}
           </span>
         </div>

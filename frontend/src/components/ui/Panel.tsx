@@ -7,9 +7,9 @@ interface PanelProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const glowMap: Record<NonNullable<PanelProps['glow']>, string> = {
-  cyan: 'shadow-[0_0_0_1px_var(--color-line),0_0_40px_-20px_var(--color-cyan)]',
-  green: 'shadow-[0_0_0_1px_var(--color-line),0_0_40px_-20px_var(--color-green)]',
-  purple: 'shadow-[0_0_0_1px_var(--color-line),0_0_40px_-20px_var(--color-purple)]',
+  cyan: 'border-cyan/40 shadow-[0_12px_36px_-6px_rgba(143,30,174,0.18)]',
+  green: 'border-green/40 shadow-[0_12px_36px_-6px_rgba(16,126,71,0.15)]',
+  purple: 'border-purple/40 shadow-[0_12px_36px_-6px_rgba(143,30,174,0.18)]',
   none: '',
 };
 
@@ -29,7 +29,7 @@ export function Panel({
 }: PanelProps) {
   return (
     <div
-      className={`rounded-xl border border-line bg-panel ${glowMap[glow]} ${paddingMap[padding]} ${className}`}
+      className={`rounded-2xl border border-white/90 bg-white/75 backdrop-blur-xl shadow-[0_10px_30px_-5px_rgba(143,30,174,0.07),0_2px_8px_-2px_rgba(0,0,0,0.03),inset_0_1.5px_1px_rgba(255,255,255,1),inset_0_-1px_1px_rgba(143,30,174,0.04)] transition-all duration-300 hover:shadow-[0_16px_38px_-6px_rgba(143,30,174,0.12)] hover:border-cyan/40 ${glowMap[glow]} ${paddingMap[padding]} ${className}`}
       {...rest}
     >
       {children}

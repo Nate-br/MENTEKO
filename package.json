@@ -1,0 +1,27 @@
+{
+  "name": "menteko",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Human-centered cybersecurity awareness and digital fraud resilience platform",
+  "scripts": {
+    "install:all": "npm install --prefix frontend && npm install --prefix backend",
+    "build:frontend": "npm run build --prefix frontend",
+    "build:backend": "npm run build --prefix backend",
+    "build": "npm run build --prefix frontend && npm run build --prefix backend",
+    "start": "npm run start --prefix backend",
+    "seed": "npm run seed --prefix backend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "cybersecurity",
+    "awareness",
+    "simulation",
+    "fraud-resilience"
+  ],
+  "author": "Team HUNTERS",
+  "license": "ISC"
+}

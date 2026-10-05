@@ -9,12 +9,12 @@ interface BadgeProps {
 }
 
 const toneMap: Record<Tone, string> = {
-  cyan: 'text-cyan border-cyan/30 bg-cyan/5',
-  green: 'text-green border-green/30 bg-green/5',
-  purple: 'text-purple border-purple/30 bg-purple/5',
-  blue: 'text-blue border-blue/30 bg-blue/5',
+  cyan: 'text-cyan border-cyan/30 bg-cyan/10',
+  green: 'text-green border-green/30 bg-green/10',
+  purple: 'text-purple border-purple/30 bg-purple/10',
+  blue: 'text-blue border-blue/30 bg-blue/10',
   muted: 'text-muted border-line bg-panel-2',
-  danger: 'text-[#ff6b6b] border-[#4a1f22] bg-[#1a0e0f]',
+  danger: 'text-[#dc2626] border-[#fecaca] bg-[#fef2f2]',
 };
 
 export function Badge({ children, tone = 'muted', icon }: BadgeProps) {

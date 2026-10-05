@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: menteko
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm run install:all && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+        # Provide your MongoDB Atlas URI in the Render Dashboard (e.g. mongodb+srv://user:pass@cluster.mongodb.net/menteko)
+      - key: CORS_ORIGIN
+        value: "*"
