@@ -86,7 +86,7 @@ export function Home() {
       {/* 2. Mission Section: STOP WARNING AND START TRAINING EMPLOYEES (Scroll-Triggered Animated Intro) */}
       <section
         ref={missionRef}
-        className="relative z-10 mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 text-center"
+        className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:py-24 sm:px-6 lg:px-8 text-center"
       >
         {/* Kicker & Main Headline */}
         <div
@@ -100,7 +100,7 @@ export function Home() {
             CYBERSECURITY AWARENESS PLATFORM
           </p>
 
-          <h2 className="mt-4 text-4xl font-extrabold uppercase tracking-tight text-text sm:text-5xl lg:text-6xl leading-[1.08] max-w-4xl mx-auto">
+          <h2 className="mt-4 text-2xl min-[400px]:text-3xl sm:text-5xl lg:text-6xl font-extrabold uppercase tracking-tight text-text leading-[1.12] sm:leading-[1.08] max-w-4xl mx-auto">
             STOP WARNING AND
             <br />
             <span className="bg-gradient-to-r from-[#8f1eae] via-[#b947db] to-[#6d1385] bg-clip-text text-transparent">
@@ -182,7 +182,7 @@ export function Home() {
         ref={processRef}
         className="border-t border-line bg-gradient-to-b from-transparent via-[#8f1eae]/[0.02] to-transparent"
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:py-20 sm:px-6 lg:px-8">
           <div
             style={{
               transform: processVisible ? 'translateY(0)' : 'translateY(24px)',
@@ -227,7 +227,7 @@ export function Home() {
           opacity: ctaVisible ? 1 : 0,
           transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s',
         }}
-        className="mx-auto max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8"
+        className="mx-auto max-w-7xl px-4 py-16 sm:py-24 text-center sm:px-6 lg:px-8"
       >
         <h2 className="text-3xl font-semibold text-text sm:text-4xl">Start your training</h2>
         <p className="mx-auto mt-4 max-w-md text-muted">
