@@ -436,7 +436,17 @@ def auto_deploy():
             timeout=35
         )
 
-        # Touch PythonAnywhere WSGI file to trigger hot reload
+        # If running on DirectAdmin shared hosting, sync frontend dist to public_html
+        pub_html = os.path.expanduser('~/domains/menteko.savethegeneration.com.et/public_html')
+        if os.path.isdir(pub_html):
+            frontend_dist_dir = os.path.join(repo_dir, 'frontend', 'dist')
+            if os.path.isdir(frontend_dist_dir):
+                subprocess.run(
+                    ['rsync', '-a', '--exclude=api', '--exclude=.htaccess', frontend_dist_dir + '/', pub_html + '/'],
+                    check=False
+                )
+
+        # Touch WSGI / Passenger files to trigger hot reload
         wsgi_candidates = [
             '/var/www/natepythonware_pythonanywhere_com_wsgi.py',
             os.path.join(repo_dir, 'wsgi_deploy.py'),
@@ -444,8 +454,10 @@ def auto_deploy():
         ]
         reloaded = []
         for p in wsgi_candidates:
-            if os.path.exists(p):
-                os.utime(p, None)
+            restart_dir = os.path.dirname(p)
+            if os.path.isdir(restart_dir):
+                with open(p, 'a'):
+                    os.utime(p, None)
                 reloaded.append(p)
 
         return jsonify({
