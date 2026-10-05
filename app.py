@@ -3,6 +3,7 @@ import sys
 import json
 import sqlite3
 import uuid
+import subprocess
 from datetime import datetime, timezone
 from flask import Flask, request, jsonify, send_from_directory, abort
 
@@ -554,6 +555,48 @@ def create_user():
     conn.close()
 
     return jsonify({"success": True, "data": {"_id": user_id, "name": name, "email": email, "createdAt": now}}), 201
+
+
+# ============================================================================
+# AUTOMATIC DEPLOYMENT / RELOAD WEBHOOK (PYTHONANYWHERE)
+# ============================================================================
+@app.route('/api/deploy', methods=['GET', 'POST'])
+def auto_deploy():
+    token = request.args.get('token') or (request.get_json(silent=True) or {}).get('token')
+    expected_token = os.environ.get('DEPLOY_TOKEN', 'menteko-deploy-2026')
+
+    if token != expected_token:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    try:
+        repo_dir = os.path.dirname(os.path.abspath(__file__))
+        result = subprocess.run(
+            ['git', 'pull', 'origin', 'fitse'],
+            cwd=repo_dir,
+            capture_output=True,
+            text=True,
+            timeout=35
+        )
+
+        # Touch PythonAnywhere WSGI file to trigger hot reload
+        wsgi_candidates = [
+            '/var/www/natepythonware_pythonanywhere_com_wsgi.py',
+            os.path.join(repo_dir, 'wsgi_deploy.py')
+        ]
+        reloaded = []
+        for p in wsgi_candidates:
+            if os.path.exists(p):
+                os.utime(p, None)
+                reloaded.append(p)
+
+        return jsonify({
+            "success": True,
+            "git_stdout": result.stdout,
+            "git_stderr": result.stderr,
+            "reloaded_files": reloaded
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 # ============================================================================
