@@ -5,7 +5,9 @@ export type ScenarioCategory =
   | 'impersonation'
   | 'payment-fraud'
   | 'fake-evidence'
-  | 'social-engineering';
+  | 'social-engineering'
+  | 'baiting'
+  | 'scareware';
 
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 
@@ -26,6 +28,13 @@ export interface ScenarioContent {
   subject?: string;
   body: string;
   callToAction?: string;
+  fromName?: string;
+  fromEmail?: string;
+  to?: string;
+  sentAt?: string;
+  linkDisplay?: string;
+  linkActual?: string;
+  attachmentLabel?: string;
   meta?: Record<string, string>;
 }
 
@@ -69,6 +78,13 @@ const contentSchema = new Schema<ScenarioContent>(
     subject: String,
     body: { type: String, required: true },
     callToAction: String,
+    fromName: String,
+    fromEmail: String,
+    to: String,
+    sentAt: String,
+    linkDisplay: String,
+    linkActual: String,
+    attachmentLabel: String,
     meta: { type: Map, of: String },
   },
   { _id: false },
@@ -79,7 +95,15 @@ const scenarioSchema = new Schema<IScenario>({
   category: {
     type: String,
     required: true,
-    enum: ['phishing', 'impersonation', 'payment-fraud', 'fake-evidence', 'social-engineering'],
+    enum: [
+      'phishing',
+      'impersonation',
+      'payment-fraud',
+      'fake-evidence',
+      'social-engineering',
+      'baiting',
+      'scareware',
+    ],
   },
   difficulty: {
     type: String,

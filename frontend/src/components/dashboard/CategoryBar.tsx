@@ -6,6 +6,8 @@ const categoryLabel: Record<ScenarioCategory, string> = {
   'payment-fraud': 'Payment Fraud',
   'fake-evidence': 'Fake Evidence',
   'social-engineering': 'Social Engineering',
+  baiting: 'Baiting',
+  scareware: 'Scareware',
 };
 
 interface CategoryBarProps {

@@ -8,7 +8,26 @@ export function ScenarioContentView({ scenario }: { scenario: Scenario }) {
     <Terminal label={`SIMULATION / ${scenario.format}`}>
       <div className="space-y-1 border-b border-white/10 pb-4 text-xs">
         {content.sender && <TerminalLine field="from" value={content.sender} tone="cyan" />}
+        {content.fromName && !content.sender && (
+          <TerminalLine
+            field="from"
+            value={content.fromEmail ? `${content.fromName} <${content.fromEmail}>` : content.fromName}
+            tone="cyan"
+          />
+        )}
+        {content.to && <TerminalLine field="to" value={content.to} tone="muted" />}
+        {content.sentAt && <TerminalLine field="time" value={content.sentAt} tone="muted" />}
         {content.subject && <TerminalLine field="subject" value={content.subject} />}
+        {content.attachmentLabel && (
+          <TerminalLine field="attachment" value={content.attachmentLabel} tone="purple" />
+        )}
+        {content.linkDisplay && (
+          <TerminalLine
+            field="link"
+            value={`${content.linkDisplay}${content.linkActual ? ` (target: ${content.linkActual})` : ''}`}
+            tone="muted"
+          />
+        )}
         {content.meta &&
           Object.entries(content.meta).map(([key, value]) => (
             <TerminalLine key={key} field={key} value={value} tone="muted" />

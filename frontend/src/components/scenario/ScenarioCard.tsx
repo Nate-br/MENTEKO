@@ -9,6 +9,8 @@ const categoryLabel: Record<Scenario['category'], string> = {
   'payment-fraud': 'Payment Fraud',
   'fake-evidence': 'Fake Evidence',
   'social-engineering': 'Social Engineering',
+  baiting: 'Baiting',
+  scareware: 'Scareware',
 };
 
 const difficultyTone: Record<Scenario['difficulty'], 'green' | 'blue' | 'purple'> = {

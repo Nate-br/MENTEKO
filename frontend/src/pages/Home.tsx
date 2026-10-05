@@ -230,8 +230,8 @@ export function Home() {
         className="mx-auto max-w-7xl px-4 py-16 sm:py-24 text-center sm:px-6 lg:px-8"
       >
         <h2 className="text-3xl font-semibold text-text sm:text-4xl">Start your training</h2>
-        <p className="mx-auto mt-4 max-w-md text-muted">
-          Five realistic scenarios. Real decisions. No pressure that isn't part of the lesson.
+        <p className="mx-auto mt-4 max-w-lg text-muted">
+          15 realistic scenarios across phishing, baiting, scareware, and fraud. Real decisions. No pressure that isn't part of the lesson.
         </p>
         <div className="mt-8 flex justify-center">
           <Button as="link" to="/simulate" variant="primary" size="lg" className="shadow-[0_8px_24px_rgba(143,30,174,0.3)]">

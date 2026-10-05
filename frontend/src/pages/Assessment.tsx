@@ -22,6 +22,8 @@ const categoryName: Record<ScenarioCategory, string> = {
   'payment-fraud': 'payment requests',
   'fake-evidence': 'transaction verification',
   'social-engineering': 'social engineering',
+  baiting: 'physical & QR baiting',
+  scareware: 'scareware & fake alerts',
 };
 
 export function Assessment() {

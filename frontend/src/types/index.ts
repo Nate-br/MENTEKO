@@ -3,7 +3,9 @@ export type ScenarioCategory =
   | 'impersonation'
   | 'payment-fraud'
   | 'fake-evidence'
-  | 'social-engineering';
+  | 'social-engineering'
+  | 'baiting'
+  | 'scareware';
 
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 
@@ -42,6 +44,13 @@ export interface ScenarioContent {
   subject?: string;
   body: string;
   callToAction?: string;
+  fromName?: string;
+  fromEmail?: string;
+  to?: string;
+  sentAt?: string;
+  linkDisplay?: string;
+  linkActual?: string;
+  attachmentLabel?: string;
   meta?: Record<string, string>;
 }
 

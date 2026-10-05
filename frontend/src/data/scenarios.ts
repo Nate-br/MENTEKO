@@ -1,11 +1,12 @@
 import type { Scenario } from '@/types';
+import { extraScenarios } from './extraScenarios';
 
 /**
  * Local seed data. Mirrors the shape returned by GET /api/scenarios so the
  * Simulate flow works identically before and after the backend is wired up.
  * All senders, names, amounts and references below are fictional.
  */
-export const scenarios: Scenario[] = [
+const baseScenarios: Scenario[] = [
   {
     _id: 'seed-phishing-01',
     title: 'Urgent Account Verification',
@@ -243,6 +244,8 @@ export const scenarios: Scenario[] = [
     createdAt: '2026-01-01T00:00:00.000Z',
   },
 ];
+
+export const scenarios: Scenario[] = [...baseScenarios, ...extraScenarios];
 
 export function getScenarioById(id: string): Scenario | undefined {
   return scenarios.find((s) => s._id === id);

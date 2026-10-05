@@ -1,4 +1,5 @@
 import type { IScenario } from '../models/Scenario';
+import { extraScenarioSeedData } from './extraScenarioSeedData';
 
 /**
  * Seed data for the 5 MVP scenarios. All senders, names, amounts and
@@ -7,33 +8,45 @@ import type { IScenario } from '../models/Scenario';
  */
 export const scenarioSeedData: Partial<IScenario>[] = [
   {
-    title: 'Urgent Account Verification',
+    title: 'Menteko Bank — Account Verification',
     category: 'phishing',
     difficulty: 'beginner',
-    format: 'MESSAGE',
+    format: 'EMAIL',
     context:
-      'You receive an email while checking your inbox on a weekday morning. Nothing else in your account activity looks unusual.',
+      'You are an employee checking work email on a weekday morning. This message appears in your inbox. Menteko Bank is a fictional organization used only for this authorized awareness exercise.',
     content: {
-      sender: 'security-alert@meskelbank-verify.test',
-      subject: 'Urgent: Account Verification Required',
-      body: 'Your account requires verification. We detected unusual sign-in activity. Verify immediately to avoid restrictions on your account within 24 hours.',
-      callToAction: 'VERIFY ACCOUNT',
+      sender: 'Menteko Bank Security <alerts@secure.menteko.local>',
+      fromName: 'Menteko Bank Security',
+      fromEmail: 'alerts@secure.menteko.local',
+      to: 'you@company.example',
+      sentAt: 'Mon 8:42 AM',
+      subject: 'Action required: verify your Menteko Bank account within 24 hours',
+      body: 'Dear customer,\n\nOur systems flagged unusual sign-in activity on your Menteko Bank account. To keep your account active, please verify your identity today.\n\nIf you do not complete verification within 24 hours, online access may be temporarily restricted.\n\nThank you,\nMenteko Bank Customer Security',
+      callToAction: 'Verify account now',
+      linkDisplay: 'https://www.mentekobank.example/verify',
+      linkActual: 'https://secure.menteko.local/account/verify?id=trn-8841',
+      meta: {
+        simulationModule: 'menteko-bank-phishing',
+        organization: 'Menteko Bank (fictional — training only)',
+      },
     },
     indicators: [
-      { id: 'ind-1', title: 'Urgency', description: 'The message pressures you to act within a strict, short deadline.' },
-      { id: 'ind-2', title: 'Suspicious sender', description: 'The domain "meskelbank-verify.test" mimics a bank but is not the official domain.' },
-      { id: 'ind-3', title: 'External action', description: 'The button pushes you toward an unverified link instead of your normal banking app.' },
-      { id: 'ind-4', title: 'Threat language', description: 'The message threatens "restrictions" to create fear and rush your decision.' },
+      { id: 'ind-1', title: 'Urgency', description: 'The message uses a 24-hour deadline to push you to act before you have time to think.' },
+      { id: 'ind-2', title: 'Unexpected request', description: 'You were not expecting an account verification request in email, especially at work.' },
+      { id: 'ind-3', title: 'Suspicious URL', description: 'The real destination (secure.menteko.local) does not match a legitimate Menteko Bank web address you would normally use.' },
+      { id: 'ind-4', title: 'Sensitive information', description: 'Verification pages often ask for login details — a common way phishers harvest credentials.' },
+      { id: 'ind-5', title: 'Identity verification', description: 'The sender address uses a lookalike domain; you cannot confirm this message came from the real bank without checking independently.' },
     ],
     options: [
-      { id: 'opt-open', label: 'OPEN / CONTINUE', isCorrect: false },
-      { id: 'opt-verify', label: 'VERIFY FIRST', isCorrect: true },
-      { id: 'opt-report', label: 'REPORT', isCorrect: false },
+      { id: 'opt-report', label: 'Report the message', isCorrect: true },
+      { id: 'opt-ignore', label: 'Ignore or delete the message', isCorrect: true },
+      { id: 'opt-click-link', label: 'Click the verification link', isCorrect: false },
+      { id: 'opt-reply', label: 'Reply to the sender', isCorrect: false },
     ],
     explanation:
-      'This message uses urgency and a lookalike domain to rush you into clicking before you think. Verifying first — by checking the sender domain and contacting the organization through a known, separate channel — neutralizes the pressure.',
+      'This was a controlled phishing-awareness simulation. The message combined urgency, fear of account restriction, and a link to an unverified domain — classic signs of phishing. No real credentials were collected.',
     betterResponse:
-      'STOP before clicking. CHECK the sender domain. VERIFY through the official app or a known phone number. REPORT the message if it looks fraudulent.',
+      'STOP — do not act immediately. CHECK the sender, link, and whether the request makes sense. VERIFY using an independent channel (official app or known phone number, not this email). Do not provide credentials or sensitive information. REPORT using your organization’s approved process.',
     isActive: true,
   },
   {
@@ -75,6 +88,10 @@ export const scenarioSeedData: Partial<IScenario>[] = [
       'A message arrives claiming you are owed a refund from a service you used months ago. It asks you to pay a small fee first to "release" the funds.',
     content: {
       sender: 'refunds@paylink-support.test',
+      fromName: 'PayLink Refunds',
+      fromEmail: 'refunds@paylink-support.test',
+      to: 'you@company.example',
+      sentAt: 'Tue 2:18 PM',
       subject: 'You have a pending refund of 4,200 ETB',
       body: 'Our records show a pending refund of 4,200 ETB on your account. To release the funds today, send a 150 ETB processing fee to the agent code below.',
       callToAction: 'SEND PROCESSING FEE',
@@ -156,4 +173,5 @@ export const scenarioSeedData: Partial<IScenario>[] = [
       'STOP sharing credentials in chat. CHECK the sender against your real directory. VERIFY by contacting IT through a known channel. REPORT the message to security.',
     isActive: true,
   },
+  ...extraScenarioSeedData,
 ];

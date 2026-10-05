@@ -22,7 +22,15 @@ const breakdownSchema = new Schema<CategoryBreakdown>(
     category: {
       type: String,
       required: true,
-      enum: ['phishing', 'impersonation', 'payment-fraud', 'fake-evidence', 'social-engineering'],
+      enum: [
+        'phishing',
+        'impersonation',
+        'payment-fraud',
+        'fake-evidence',
+        'social-engineering',
+        'baiting',
+        'scareware',
+      ],
     },
     correct: { type: Number, required: true, min: 0 },
     total: { type: Number, required: true, min: 0 },

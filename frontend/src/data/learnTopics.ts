@@ -86,4 +86,38 @@ export const learnTopics: LearnTopic[] = [
     saferBehavior:
       'Slow down. Verify identity and intent through a separate, known channel before acting on any request.',
   },
+  {
+    id: 'baiting',
+    title: 'Baiting',
+    category: 'baiting',
+    definition:
+      'Attackers leave something tempting — a USB drive, QR code, or "free" offer — so you interact with it and compromise yourself or your organization.',
+    warningSigns: [
+      'Unknown USB or storage media in the office or parking lot',
+      'Labels that trigger curiosity ("payroll", "photos", "confidential")',
+      'QR codes on flyers without official announcement',
+      'Pressure to "just plug in" or scan quickly',
+    ],
+    example:
+      'A flash drive on your desk labeled "Q4 Bonus List" that you are tempted to plug into your work PC.',
+    saferBehavior:
+      'Never use unknown USB devices or scan unverified QR codes. Hand found media to IT/security and report the incident.',
+  },
+  {
+    id: 'scareware',
+    title: 'Scareware',
+    category: 'scareware',
+    definition:
+      'Fake security warnings — often in the browser — that frighten you into calling a scammer, paying a fee, or installing malicious software.',
+    warningSigns: [
+      'Full-screen pop-ups with countdown timers',
+      'Demands to call a "support hotline" immediately',
+      'Claims you have dozens of viruses (not from your real IT tools)',
+      'Requests to download a "cleaner" from the web page',
+    ],
+    example:
+      'A browser tab that blares alerts and tells you to call a toll-free number before your files are deleted.',
+    saferBehavior:
+      'Close the tab without engaging, use your real security tools, and contact IT through official channels if you are unsure.',
+  },
 ];
