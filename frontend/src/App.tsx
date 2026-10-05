@@ -8,6 +8,7 @@ import { ScenarioPage } from '@/pages/Scenario';
 import { Result } from '@/pages/Result';
 import { Assessment } from '@/pages/Assessment';
 import { About } from '@/pages/About';
+import { DrillView } from '@/pages/DrillView';
 
 export default function App() {
   return (
@@ -19,6 +20,8 @@ export default function App() {
             <Route path="/learn" element={<Learn />} />
             <Route path="/simulate" element={<Simulate />} />
             <Route path="/simulate/:id" element={<ScenarioPage />} />
+            <Route path="/drill" element={<DrillView />} />
+            <Route path="/drills/:drillId" element={<DrillView />} />
             <Route path="/result" element={<Result />} />
             <Route path="/assessment" element={<Assessment />} />
             <Route path="/about" element={<About />} />

@@ -12,9 +12,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from scenarios_data import ALL_SCENARIOS
-from interactive_scenarios_data import INTERACTIVE_SCENARIOS
+from dynamic_drills_data import DYNAMIC_DRILLS
 
-COMBINED_SCENARIOS = ALL_SCENARIOS + INTERACTIVE_SCENARIOS
+COMBINED_SCENARIOS = ALL_SCENARIOS
 
 SMTP_HOST = os.environ.get('SMTP_HOST', '127.0.0.1')
 SMTP_PORT = int(os.environ.get('SMTP_PORT', 25))
@@ -107,9 +107,30 @@ def init_db():
     )
     ''')
 
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS drills (
+        id TEXT PRIMARY KEY,
+        token TEXT UNIQUE NOT NULL,
+        drill_id TEXT NOT NULL,
+        target_email TEXT,
+        target_name TEXT,
+        status TEXT NOT NULL,
+        opened_at TEXT,
+        clicked_at TEXT,
+        submitted_at TEXT,
+        reported_at TEXT,
+        reaction_time_seconds INTEGER,
+        device_info TEXT,
+        created_at TEXT NOT NULL
+    )
+    ''')
+
+    # Ensure scenarios table has clean 15 base scenarios (remove legacy sim-interactive-*)
+    cursor.execute("DELETE FROM scenarios WHERE id LIKE 'sim-interactive-%'")
+
     conn.commit()
 
-    # Seed scenarios if table has fewer scenarios than combined total
+    # Seed base scenarios if table has fewer scenarios than combined total
     cursor.execute('SELECT COUNT(*) as cnt FROM scenarios')
     if cursor.fetchone()['cnt'] < len(COMBINED_SCENARIOS):
         seed_scenarios(conn)
@@ -657,6 +678,229 @@ def send_email_report():
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ============================================================================
+# DYNAMIC CYBER SIMULATION DRILL ENGINE (LIVE SERVER INTEGRATED)
+# ============================================================================
+
+@app.route('/api/drills', methods=['GET'])
+def get_drills():
+    return jsonify({
+        "success": True,
+        "count": len(DYNAMIC_DRILLS),
+        "drills": DYNAMIC_DRILLS
+    })
+
+
+@app.route('/api/drills/<drill_id>', methods=['GET'])
+def get_drill_by_id(drill_id):
+    drill = next((d for d in DYNAMIC_DRILLS if d['id'] == drill_id), None)
+    if not drill:
+        return jsonify({"success": False, "message": "Drill not found"}), 404
+    return jsonify({"success": True, "drill": drill})
+
+
+@app.route('/api/drills/launch', methods=['POST'])
+def launch_drill():
+    data = request.get_json(silent=True) or {}
+    drill_id = data.get('drillId') or 'drill-bank-webmail'
+    email = data.get('email', '').strip()
+    target_name = data.get('name', 'Trainee Defender').strip()
+
+    drill = next((d for d in DYNAMIC_DRILLS if d['id'] == drill_id), None)
+    if not drill:
+        return jsonify({"success": False, "message": "Drill not found"}), 404
+
+    token = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    base_url = os.environ.get('BASE_URL', 'https://menteko.savethegeneration.com.et')
+    drill_url = f"{base_url}/drill?token={token}&drill={drill_id}"
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO drills
+        (id, token, drill_id, target_email, target_name, status, reaction_time_seconds, device_info, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (str(uuid.uuid4()), token, drill_id, email or None, target_name, 'dispatched', None, request.headers.get('User-Agent', ''), now))
+    conn.commit()
+    conn.close()
+
+    email_sent = False
+    if email and drill.get('serverEmailSupport'):
+        tmpl = drill.get('emailTemplate', {})
+        html_email = f"""
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8">
+        <style>
+          body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f6f8; margin: 0; padding: 24px; color: #1a202c; }}
+          .card {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
+          .btn {{ display: inline-block; background-color: #1a73e8; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 16px 0; }}
+          .disclaimer {{ margin-top: 24px; padding-top: 16px; border-top: 1px solid #edf2f7; font-size: 11px; color: #718096; }}
+        </style>
+        </head>
+        <body>
+          <div class="card">
+            <h3 style="margin-top: 0; color: #2d3748;">{tmpl.get('subject', 'Security Notice')}</h3>
+            <p style="white-space: pre-line; line-height: 1.6;">{tmpl.get('body', '')}</p>
+            <p style="text-align: center;">
+              <a href="{drill_url}" class="btn">{tmpl.get('callToAction', 'Review Notification')}</a>
+            </p>
+            <div class="disclaimer">
+              🔒 <b>MENTEKO Authorized Cyber Simulation:</b> This controlled exercise tests human resilience. No actual passwords or credentials are ever collected or stored.
+            </div>
+          </div>
+        </body>
+        </html>
+        """
+        try:
+            send_smtp_email(
+                to_email=email,
+                subject=tmpl.get('subject', 'Security Drill'),
+                html_content=html_email,
+                text_content=f"{tmpl.get('body', '')}\\n\\nDrill Link: {drill_url}",
+                from_name=tmpl.get('fromName', 'Menteko Cyber Defense')
+            )
+            email_sent = True
+        except Exception as e:
+            app.logger.warning(f"Failed to dispatch drill email: {e}")
+
+    return jsonify({
+        "success": True,
+        "token": token,
+        "drillId": drill_id,
+        "drillUrl": drill_url,
+        "emailSent": email_sent,
+        "message": f"Drill session initiated successfully{' and email delivered to ' + email if email_sent else ''}."
+    })
+
+
+@app.route('/api/drills/session/<token>', methods=['GET'])
+def get_drill_session(token):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM drills WHERE token = ?', (token,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"success": False, "message": "Invalid drill token"}), 404
+
+    drill_session = dict(row)
+    now = datetime.now(timezone.utc).isoformat()
+    if not drill_session.get('opened_at'):
+        cursor.execute("UPDATE drills SET opened_at = ?, status = CASE WHEN status = 'dispatched' THEN 'opened' ELSE status END WHERE token = ?", (now, token))
+        conn.commit()
+        drill_session['opened_at'] = now
+        if drill_session['status'] == 'dispatched':
+            drill_session['status'] = 'opened'
+
+    conn.close()
+
+    drill_id = drill_session.get('drill_id')
+    drill = next((d for d in DYNAMIC_DRILLS if d['id'] == drill_id), None)
+
+    return jsonify({
+        "success": True,
+        "session": drill_session,
+        "drill": drill
+    })
+
+
+@app.route('/api/drills/action', methods=['POST'])
+def record_drill_action():
+    data = request.get_json(silent=True) or {}
+    token = data.get('token')
+    action = data.get('action')
+    details = data.get('details', {})
+
+    if not token or not action:
+        return jsonify({"success": False, "message": "Token and action are required"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM drills WHERE token = ?', (token,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"success": False, "message": "Session not found"}), 404
+
+    session = dict(row)
+    now_dt = datetime.now(timezone.utc)
+    now = now_dt.isoformat()
+
+    ref_time_str = session.get('opened_at') or session.get('created_at')
+    reaction_time = 12
+    if ref_time_str:
+        try:
+            ref_dt = datetime.fromisoformat(ref_time_str.replace('Z', '+00:00'))
+            reaction_time = max(1, int((now_dt - ref_dt).total_seconds()))
+        except Exception:
+            reaction_time = 12
+
+    new_status = session.get('status')
+    if action == 'click_link':
+        new_status = 'clicked'
+        cursor.execute('UPDATE drills SET status = ?, clicked_at = ?, reaction_time_seconds = ? WHERE token = ?', (new_status, now, reaction_time, token))
+    elif action == 'submit_credentials':
+        new_status = 'compromised'
+        cursor.execute('UPDATE drills SET status = ?, submitted_at = ?, reaction_time_seconds = ? WHERE token = ?', (new_status, now, reaction_time, token))
+    elif action == 'report_phishing':
+        new_status = 'reported'
+        cursor.execute('UPDATE drills SET status = ?, reported_at = ?, reaction_time_seconds = ? WHERE token = ?', (new_status, now, reaction_time, token))
+    elif action == 'verify_secondary':
+        new_status = 'verified'
+        cursor.execute('UPDATE drills SET status = ?, reaction_time_seconds = ? WHERE token = ?', (new_status, reaction_time, token))
+
+    conn.commit()
+    conn.close()
+
+    drill = next((d for d in DYNAMIC_DRILLS if d['id'] == session.get('drill_id')), None)
+
+    return jsonify({
+        "success": True,
+        "status": new_status,
+        "action": action,
+        "reactionTime": reaction_time,
+        "drill": drill,
+        "teachableTakeaways": drill.get('indicators', []) if drill else []
+    })
+
+
+@app.route('/api/drills/analytics', methods=['GET'])
+def get_drill_analytics():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) as total FROM drills')
+    total = cursor.fetchone()['total']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('clicked', 'compromised', 'reported', 'verified', 'opened')")
+    opened = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('clicked', 'compromised')")
+    clicked = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status = 'compromised'")
+    compromised = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('reported', 'verified')")
+    reported = cursor.fetchone()['cnt']
+
+    conn.close()
+
+    return jsonify({
+        "success": True,
+        "totalDispatched": total,
+        "openedCount": opened,
+        "clickedCount": clicked,
+        "compromisedCount": compromised,
+        "reportedCount": reported,
+        "openRate": round((opened / total * 100), 1) if total else 0,
+        "clickRate": round((clicked / total * 100), 1) if total else 0,
+        "compromiseRate": round((compromised / total * 100), 1) if total else 0,
+        "reportingRate": round((reported / total * 100), 1) if total else 0
+    })
 
 
 # ============================================================================

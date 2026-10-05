@@ -123,6 +123,24 @@ export const api = {
       throw normalizeError(error);
     }
   },
+
+  get: async <T = any>(url: string, config?: any): Promise<T> => {
+    try {
+      const { data } = await client.get(url, config);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  },
+
+  post: async <T = any>(url: string, payload?: any, config?: any): Promise<T> => {
+    try {
+      const { data } = await client.post(url, payload, config);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  },
 };
 
 export default api;
