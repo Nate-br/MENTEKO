@@ -14,6 +14,7 @@ export interface ScenarioOption {
   label: string;
   /** True if this is the safe / correct course of action */
   isCorrect: boolean;
+  outcomeNote?: string;
 }
 
 export interface ScenarioIndicator {

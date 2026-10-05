@@ -1,5 +1,6 @@
 import type { Scenario } from '@/types';
 import { extraScenarios } from './extraScenarios';
+import { interactiveScenarios } from './interactiveScenarios';
 
 /**
  * Local seed data. Mirrors the shape returned by GET /api/scenarios so the
@@ -245,7 +246,7 @@ const baseScenarios: Scenario[] = [
   },
 ];
 
-export const scenarios: Scenario[] = [...baseScenarios, ...extraScenarios];
+export const scenarios: Scenario[] = [...baseScenarios, ...extraScenarios, ...interactiveScenarios];
 
 export function getScenarioById(id: string): Scenario | undefined {
   return scenarios.find((s) => s._id === id);

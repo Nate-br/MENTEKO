@@ -10,7 +10,12 @@ export interface SessionAttempt {
 
 interface SessionContextValue {
   attempts: SessionAttempt[];
-  recordAttempt: (scenario: Scenario, selectedOptionId: string, correct: boolean) => void;
+  recordAttempt: (
+    scenario: Scenario,
+    selectedOptionId: string,
+    correct: boolean,
+    metrics?: Record<string, any>
+  ) => void;
   resetSession: () => void;
   resilienceScore: number;
   categoryBreakdown: { category: ScenarioCategory; correct: number; total: number }[];
@@ -21,12 +26,21 @@ const SessionContext = createContext<SessionContextValue | undefined>(undefined)
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [attempts, setAttempts] = useState<SessionAttempt[]>([]);
 
-  const recordAttempt = (scenario: Scenario, selectedOptionId: string, correct: boolean) => {
+  const recordAttempt = (
+    scenario: Scenario,
+    selectedOptionId: string,
+    correct: boolean,
+    metrics?: Record<string, any>
+  ) => {
     setAttempts((prev) => [...prev, { scenario, selectedOptionId, correct }]);
 
     // Best-effort sync to backend; safe to ignore failures during local/dev use.
     api
-      .submitAttempt({ scenario: scenario._id, selectedOption: selectedOptionId })
+      .submitAttempt({
+        scenario: scenario._id,
+        selectedOption: selectedOptionId,
+        ...(metrics ? { metrics } : {})
+      })
       .catch(() => undefined);
   };
 

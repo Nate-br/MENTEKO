@@ -42,6 +42,11 @@ export function ScenarioCard({ scenario, index, completed }: ScenarioCardProps) 
         <div className="mt-5 flex flex-wrap gap-2">
           <Badge tone="cyan">{categoryLabel[scenario.category]}</Badge>
           <Badge tone={difficultyTone[scenario.difficulty]}>{scenario.difficulty}</Badge>
+          {(scenario._id.startsWith('sim-interactive') || scenario.content?.meta?.interactive) && (
+            <Badge tone="purple" className="border-purple/40 bg-purple/10 text-purple">
+              Interactive Drill
+            </Badge>
+          )}
         </div>
       </Panel>
     </Link>

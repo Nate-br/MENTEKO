@@ -7,7 +7,18 @@ import subprocess
 from datetime import datetime, timezone
 from flask import Flask, request, jsonify, send_from_directory, abort
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 from scenarios_data import ALL_SCENARIOS
+from interactive_scenarios_data import INTERACTIVE_SCENARIOS
+
+COMBINED_SCENARIOS = ALL_SCENARIOS + INTERACTIVE_SCENARIOS
+
+SMTP_HOST = os.environ.get('SMTP_HOST', '127.0.0.1')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 25))
+DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL', 'noreply@savethegeneration.com.et')
 
 app = Flask(__name__)
 
@@ -98,9 +109,9 @@ def init_db():
 
     conn.commit()
 
-    # Seed scenarios if table is empty or has fewer than 15 scenarios
+    # Seed scenarios if table has fewer scenarios than combined total
     cursor.execute('SELECT COUNT(*) as cnt FROM scenarios')
-    if cursor.fetchone()['cnt'] < len(ALL_SCENARIOS):
+    if cursor.fetchone()['cnt'] < len(COMBINED_SCENARIOS):
         seed_scenarios(conn)
 
     conn.close()
@@ -109,7 +120,7 @@ def init_db():
 def seed_scenarios(conn):
     cursor = conn.cursor()
     now = datetime.now(timezone.utc).isoformat()
-    for s in ALL_SCENARIOS:
+    for s in COMBINED_SCENARIOS:
         cursor.execute('''
         INSERT OR REPLACE INTO scenarios
         (id, title, category, difficulty, format, context, content, indicators, options, explanation, betterResponse, isActive, createdAt)
@@ -413,6 +424,239 @@ def create_user():
     conn.close()
 
     return jsonify({"success": True, "data": {"_id": user_id, "name": name, "email": email, "createdAt": now}}), 201
+
+
+# ============================================================================
+# EMAIL SERVICE (SMTP DRILLS & CERTIFICATES)
+# ============================================================================
+def send_smtp_email(to_email, subject, html_content, text_content=None, from_name="MENTEKO Cyber Resilience"):
+    sender = DEFAULT_FROM_EMAIL
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = f"{from_name} <{sender}>"
+    msg['To'] = to_email
+
+    if text_content:
+        msg.attach(MIMEText(text_content, 'plain', 'utf-8'))
+    else:
+        msg.attach(MIMEText("This is an authorized awareness training message from MENTEKO Platform.", 'plain', 'utf-8'))
+
+    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=12) as server:
+        server.sendmail(sender, [to_email], msg.as_string())
+    return True
+
+
+@app.route('/api/email/status', methods=['GET'])
+def email_status():
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=4) as server:
+            server.noop()
+            return jsonify({
+                "success": True,
+                "status": "connected",
+                "smtp_host": f"{SMTP_HOST}:{SMTP_PORT}",
+                "from_email": DEFAULT_FROM_EMAIL
+            })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "status": "unavailable",
+            "error": str(e),
+            "smtp_host": f"{SMTP_HOST}:{SMTP_PORT}"
+        }), 503
+
+
+@app.route('/api/email/send-drill', methods=['POST'])
+def send_email_drill():
+    data = request.get_json(silent=True) or {}
+    if not data or not data.get('email'):
+        return jsonify({"success": False, "message": "Recipient email is required"}), 400
+
+    recipient = data.get('email').strip()
+    scenario_id = data.get('scenarioId', 'sim-interactive-menteko-01')
+    target_name = data.get('name', 'Team Member').strip()
+
+    # Find the scenario in SQLite
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM scenarios WHERE id = ?', (scenario_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"success": False, "message": "Scenario not found"}), 404
+
+    scenario = dict(row)
+    content = json.loads(scenario['content']) if isinstance(scenario['content'], str) else scenario['content']
+
+    subject = content.get('subject', 'Action Required: Security Notice')
+    sender_name = content.get('fromName', 'IT Security Team')
+    body_text = content.get('body', '')
+    call_to_action = content.get('callToAction', 'Review Notification')
+
+    drill_link = f"https://menteko.savethegeneration.com.et/simulate/{scenario_id}?drill=1&recipient={recipient}"
+
+    html_email = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f6f8fc; margin: 0; padding: 24px; color: #202124; }}
+        .card {{ max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }}
+        .header {{ padding: 20px 24px; border-bottom: 1px solid #f1f3f4; }}
+        .sender-badge {{ font-size: 14px; font-weight: 700; color: #1a73e8; }}
+        .body-content {{ padding: 28px 24px; font-size: 15px; line-height: 1.6; color: #3c4043; }}
+        .btn {{ display: inline-block; background-color: #1a73e8; color: #ffffff !important; text-decoration: none; padding: 12px 26px; border-radius: 6px; font-weight: 600; font-size: 14px; margin-top: 18px; }}
+        .footer {{ padding: 16px 24px; background: #f8f9fa; border-top: 1px solid #f1f3f4; font-size: 11px; color: #70757a; line-height: 1.5; }}
+        .notice {{ background: #e8f0fe; color: #1967d2; padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-top: 20px; }}
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <span class="sender-badge">{sender_name}</span>
+          <span style="float: right; font-size: 12px; color: #5f6368;">Simulation Drill</span>
+        </div>
+        <div class="body-content">
+          <p>Hello {target_name},</p>
+          <p style="white-space: pre-line;">{body_text}</p>
+          <p>
+            <a href="{drill_link}" class="btn">{call_to_action}</a>
+          </p>
+          <div class="notice">
+            🔒 <b>Menteko Training Simulation:</b> Test your instincts. If you would click this link in real life, click above to see the breakdown and learning moments.
+          </div>
+        </div>
+        <div class="footer">
+          This message was sent as part of an authorized cybersecurity awareness exercise powered by <b>MENTEKO</b> (<a href="https://menteko.savethegeneration.com.et" style="color:#1a73e8;">menteko.savethegeneration.com.et</a>). No actual passwords, funds, or credentials are ever collected or stored.
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    try:
+        send_smtp_email(
+            to_email=recipient,
+            subject=subject,
+            html_content=html_email,
+            text_content=f"{body_text}\\n\\n[Action Link]: {drill_link}",
+            from_name=sender_name
+        )
+        return jsonify({
+            "success": True,
+            "message": f"Phishing simulation drill email delivered to {recipient}",
+            "drill_link": drill_link
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/email/send-report', methods=['POST'])
+def send_email_report():
+    data = request.get_json(silent=True) or {}
+    if not data or not data.get('email'):
+        return jsonify({"success": False, "message": "Recipient email is required"}), 400
+
+    recipient = data.get('email').strip()
+    user_name = data.get('name', 'Cyber Resilience Trainee').strip()
+    score = data.get('score', 0)
+    correct = data.get('correct', 0)
+    total = data.get('total', 0)
+    breakdown = data.get('categoryBreakdown', {})
+
+    now_str = datetime.now(timezone.utc).strftime("%B %d, %Y")
+
+    badge_status = "CERTIFIED RESILIENT DEFENDER" if score >= 80 else ("DEVELOPING DEFENDER" if score >= 50 else "AWARENESS TRAINEE")
+    badge_color = "#00f0ff" if score >= 80 else ("#f59e0b" if score >= 50 else "#ec4899")
+
+    breakdown_rows = ""
+    for cat, stats in breakdown.items():
+        if isinstance(stats, dict):
+            c_score = stats.get('score', 0)
+            c_count = f"{stats.get('correct', 0)}/{stats.get('total', 0)}"
+        else:
+            c_score = stats
+            c_count = ""
+        breakdown_rows += f"""
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #1a2c38; text-transform: capitalize; color: #e2e8f0;">{cat.replace('-', ' ')}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #1a2c38; text-align: center; color: #94a3b8;">{c_count}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #1a2c38; text-align: right; font-weight: 700; color: #00f0ff;">{c_score}%</td>
+        </tr>
+        """
+
+    html_cert = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body {{ background-color: #050b11; margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #e2e8f0; }}
+        .cert-card {{ max-width: 620px; margin: 0 auto; background: #08121a; border: 1px solid #00f0ff33; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 240, 255, 0.12); }}
+        .cert-header {{ background: linear-gradient(135deg, #0d2433 0%, #08121a 100%); padding: 32px 24px; text-align: center; border-bottom: 1px solid #00f0ff22; }}
+        .title {{ font-size: 24px; font-weight: 800; letter-spacing: 2px; color: #ffffff; margin: 0; }}
+        .score-circle {{ display: inline-block; margin-top: 16px; background: #0d2433; border: 3px solid {badge_color}; border-radius: 50%; width: 92px; height: 92px; line-height: 86px; font-size: 32px; font-weight: 900; color: #ffffff; text-align: center; }}
+        .badge {{ display: inline-block; margin-top: 14px; font-size: 11px; letter-spacing: 1.5px; font-weight: 800; padding: 6px 14px; border-radius: 20px; background: {badge_color}22; color: {badge_color}; border: 1px solid {badge_color}44; text-transform: uppercase; }}
+        .cert-body {{ padding: 28px 24px; }}
+        .table {{ width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }}
+        .footer {{ padding: 18px 24px; background: #050b11; border-top: 1px solid #00f0ff22; text-align: center; font-size: 11px; color: #64748b; }}
+      </style>
+    </head>
+    <body>
+      <div class="cert-card">
+        <div class="cert-header">
+          <p style="color: #00f0ff; font-size: 11px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase; margin: 0 0 8px 0;">Official Verification Certificate</p>
+          <h1 class="title">MENTEKO CYBER RESILIENCE</h1>
+          <div class="score-circle">{score}%</div>
+          <div><span class="badge">{badge_status}</span></div>
+        </div>
+        <div class="cert-body">
+          <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1;">
+            This certifies that <b>{user_name}</b> has completed the human-centered cybersecurity assessment on <b>{now_str}</b>, achieving a resilience score of <b>{score}%</b> ({correct} out of {total} threat vectors correctly handled).
+          </p>
+          <h3 style="font-size: 13px; letter-spacing: 1px; color: #00f0ff; text-transform: uppercase; margin-top: 24px;">Category Competency Breakdown</h3>
+          <table class="table">
+            <thead>
+              <tr style="color: #64748b; font-size: 11px; text-transform: uppercase;">
+                <th style="padding: 8px 12px; text-align: left; border-bottom: 1px solid #1a2c38;">Category</th>
+                <th style="padding: 8px 12px; text-align: center; border-bottom: 1px solid #1a2c38;">Ratio</th>
+                <th style="padding: 8px 12px; text-align: right; border-bottom: 1px solid #1a2c38;">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {breakdown_rows}
+            </tbody>
+          </table>
+          <p style="text-align: center; margin-top: 28px;">
+            <a href="https://menteko.savethegeneration.com.et/simulate" style="display: inline-block; background: #00f0ff; color: #050b11; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; font-size: 13px;">PRACTICE MORE SIMULATIONS</a>
+          </p>
+        </div>
+        <div class="footer">
+          Verified by MENTEKO Defense Engine · Issued by <a href="https://menteko.savethegeneration.com.et" style="color: #00f0ff;">menteko.savethegeneration.com.et</a>
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    try:
+        send_smtp_email(
+            to_email=recipient,
+            subject=f"Your MENTEKO Cyber Resilience Certificate ({score}%)",
+            html_content=html_cert,
+            text_content=f"Congratulations {user_name}! You completed the MENTEKO Cyber Assessment with a score of {score}% on {now_str}.",
+            from_name="MENTEKO Certification"
+        )
+        return jsonify({
+            "success": True,
+            "message": f"Cyber Resilience Certificate delivered to {recipient}"
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 # ============================================================================

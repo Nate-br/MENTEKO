@@ -89,6 +89,40 @@ export const api = {
       throw normalizeError(error);
     }
   },
+
+  sendDrillEmail: async (payload: { email: string; name?: string; scenarioId: string }): Promise<{ success: boolean; message: string; drill_link?: string }> => {
+    try {
+      const { data } = await client.post('/email/send-drill', payload);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  },
+
+  sendReportEmail: async (payload: {
+    email: string;
+    name?: string;
+    score: number;
+    correct: number;
+    total: number;
+    categoryBreakdown?: Record<string, any>;
+  }): Promise<{ success: boolean; message: string }> => {
+    try {
+      const { data } = await client.post('/email/send-report', payload);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  },
+
+  getEmailStatus: async (): Promise<{ success: boolean; status: string; smtp_host?: string }> => {
+    try {
+      const { data } = await client.get('/email/status');
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  },
 };
 
 export default api;

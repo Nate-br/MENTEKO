@@ -2,7 +2,7 @@ import { type ButtonHTMLAttributes, type ReactNode, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
-type Size = 'md' | 'lg';
+type Size = 'sm' | 'md' | 'lg';
 
 interface BaseProps {
   variant?: Variant;
@@ -23,6 +23,7 @@ const variants: Record<Variant, string> = {
 };
 
 const sizes: Record<Size, string> = {
+  sm: 'h-8 px-3 text-xs',
   md: 'h-10 px-4 text-sm',
   lg: 'h-12 px-6 text-sm tracking-wide',
 };

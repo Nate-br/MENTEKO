@@ -6,6 +6,7 @@ interface BadgeProps {
   children: ReactNode;
   tone?: Tone;
   icon?: ReactNode;
+  className?: string;
 }
 
 const toneMap: Record<Tone, string> = {
@@ -17,10 +18,10 @@ const toneMap: Record<Tone, string> = {
   danger: 'text-[#dc2626] border-[#fecaca] bg-[#fef2f2]',
 };
 
-export function Badge({ children, tone = 'muted', icon }: BadgeProps) {
+export function Badge({ children, tone = 'muted', icon, className = '' }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-xs ${toneMap[tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-xs ${toneMap[tone]} ${className}`}
     >
       {icon}
       {children}
