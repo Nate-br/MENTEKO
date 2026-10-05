@@ -693,16 +693,24 @@ def auto_deploy():
         # Touch WSGI / Passenger files to trigger hot reload
         wsgi_candidates = [
             '/var/www/natepythonware_pythonanywhere_com_wsgi.py',
+            os.path.join(repo_dir, 'passenger_wsgi.py'),
             os.path.join(repo_dir, 'wsgi_deploy.py'),
             os.path.join(repo_dir, 'tmp', 'restart.txt')
         ]
         reloaded = []
         for p in wsgi_candidates:
-            restart_dir = os.path.dirname(p)
-            if os.path.isdir(restart_dir):
-                with open(p, 'a'):
-                    os.utime(p, None)
-                reloaded.append(p)
+            try:
+                restart_dir = os.path.dirname(p)
+                if restart_dir and not os.path.isdir(restart_dir):
+                    if 'tmp' in p:
+                        os.makedirs(restart_dir, exist_ok=True)
+                if restart_dir and os.path.isdir(restart_dir):
+                    if (os.path.exists(p) and os.access(p, os.W_OK)) or (not os.path.exists(p) and os.access(restart_dir, os.W_OK)):
+                        with open(p, 'a'):
+                            os.utime(p, None)
+                        reloaded.append(p)
+            except Exception:
+                pass
 
         return jsonify({
             "success": True,
