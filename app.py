@@ -439,7 +439,8 @@ def auto_deploy():
         # Touch PythonAnywhere WSGI file to trigger hot reload
         wsgi_candidates = [
             '/var/www/natepythonware_pythonanywhere_com_wsgi.py',
-            os.path.join(repo_dir, 'wsgi_deploy.py')
+            os.path.join(repo_dir, 'wsgi_deploy.py'),
+            os.path.join(repo_dir, 'tmp', 'restart.txt')
         ]
         reloaded = []
         for p in wsgi_candidates:
