@@ -54,7 +54,7 @@ interface AdminStats {
 }
 
 export function AdminPortal() {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'launcher' | 'monitor' | 'emails'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'launcher' | 'monitor' | 'emails' | 'templates'>('analytics');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [drills, setDrills] = useState<DrillSession[]>([]);
   const [directAdminEmails, setDirectAdminEmails] = useState<string[]>([]);
@@ -297,6 +297,7 @@ export function AdminPortal() {
         {[
           { id: 'analytics', label: 'Overview & Metrics' },
           { id: 'launcher', label: 'Send Phishing Emails to Employees' },
+          { id: 'templates', label: 'HTML Template Library' },
           { id: 'monitor', label: `Employee Live Tracker (${drills.length})` },
           { id: 'emails', label: `DirectAdmin Mailboxes (${directAdminEmails.length})` },
         ].map((t) => (
@@ -916,6 +917,125 @@ export function AdminPortal() {
                 {creatingEmail ? 'Creating in DirectAdmin...' : 'Create DirectAdmin Mailbox'}
               </Button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: PRE-BUILT HTML TEMPLATES (GOPHISH / KNOWBE4 STYLE) */}
+      {activeTab === 'templates' && (
+        <div className="mt-8 space-y-6 animate-in fade-in duration-200">
+          <div className="rounded-2xl border border-line bg-panel-1 p-6 space-y-2">
+            <h2 className="text-xl font-bold text-text flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan/10 text-cyan">
+                <Copy size={16} />
+              </span>
+              Pre-Built HTML Phishing Template Library
+            </h2>
+            <p className="text-xs text-muted leading-relaxed max-w-3xl">
+              Industry-standard phishing templates for emails and landing pages. Each template runs with an automated{' '}
+              <b>Interception Bridge</b> that safely catches submissions, simulates adversary impact, and directs employees
+              to teachable moments without writing code from scratch.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                id: 'drill-iphone-giveaway',
+                title: 'Apple iPhone 17 Pro Max VIP Giveaway',
+                category: 'VIP Rewards / Consumer Phishing',
+                emailFile: 'apple_iphone17_giveaway.html',
+                pageFile: 'apple_iphone17_giveaway.html',
+                lure: 'Greed / FOMO Exploitation (12-hour reservation countdown)',
+                badgeColor: 'border-blue-500/30 text-blue-400 bg-blue-500/10',
+              },
+              {
+                id: 'drill-bank-webmail',
+                title: 'Menteko National Bank Security Notice',
+                category: 'Banking / Financial Fraud',
+                emailFile: 'bank_security_alert.html',
+                pageFile: 'bank_online_login.html',
+                lure: 'Unauthorized Sign-in from Frankfurt / Fake Suspension threat',
+                badgeColor: 'border-amber-500/30 text-amber-400 bg-amber-500/10',
+              },
+              {
+                id: 'drill-cbe-birr',
+                title: 'Commercial Bank of Ethiopia (CBE Birr)',
+                category: 'Mobile Money / Smishing',
+                emailFile: 'cbe_birr_kyc.html',
+                pageFile: 'cbe_birr_kyc.html',
+                lure: 'Mandatory 2-Hour KYC Profile Lockout / 4-Digit PIN Harvest',
+                badgeColor: 'border-purple-500/30 text-purple-400 bg-purple-500/10',
+              },
+              {
+                id: 'drill-m365-oauth',
+                title: 'Microsoft 365 SharePoint File Invitation',
+                category: 'Enterprise Cloud / SaaS',
+                emailFile: 'm365_shared_file.html',
+                pageFile: 'm365_login.html',
+                lure: 'HR Compensation Salary Review / Azure AD SSO Harvester',
+                badgeColor: 'border-cyan/30 text-cyan bg-cyan/10',
+              },
+              {
+                id: 'drill-google-alert',
+                title: 'Google Workspace Critical Security Alert',
+                category: 'Account Security / Recovery',
+                emailFile: 'google_security_alert.html',
+                pageFile: 'google_login.html',
+                lure: 'Suspicious Sign-in in Moscow / Google Account Harvester',
+                badgeColor: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10',
+              },
+            ].map((tmpl) => (
+              <div
+                key={tmpl.id}
+                className="rounded-2xl border border-line bg-panel-1 p-5 flex flex-col justify-between space-y-4 shadow-lg hover:border-cyan/40 transition-colors"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${tmpl.badgeColor}`}>
+                      {tmpl.category}
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 font-semibold">● Ready</span>
+                  </div>
+
+                  <h3 className="text-sm font-bold text-text leading-snug">{tmpl.title}</h3>
+                  <p className="text-xs text-muted leading-relaxed">{tmpl.lure}</p>
+
+                  <div className="rounded-xl border border-line bg-panel-2 p-2.5 space-y-1 text-[11px] font-mono text-muted">
+                    <div>
+                      <span className="text-slate-400">Email:</span> {tmpl.emailFile}
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Page:</span> {tmpl.pageFile}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-line flex items-center justify-between gap-2">
+                  <a
+                    href={`/api/drills/page/preview?drill=${tmpl.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-lg bg-panel-2 border border-line px-3 py-1.5 text-xs text-muted hover:text-cyan hover:border-cyan/40 flex items-center gap-1.5 transition-colors"
+                  >
+                    <ExternalLink size={12} />
+                    <span>Preview HTML</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedDrillId(tmpl.id);
+                      setActiveTab('launcher');
+                    }}
+                    className="rounded-lg bg-gradient-to-r from-[#8f1eae] to-[#a834cb] text-white px-3 py-1.5 text-xs font-semibold shadow-[0_2px_10px_rgba(143,30,174,0.3)] hover:brightness-110 transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Send size={11} />
+                    <span>Select for Dispatch</span>
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

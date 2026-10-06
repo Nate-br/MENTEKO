@@ -27,6 +27,24 @@ export function DrillView() {
   const [showTraining, setShowTraining] = useState(false);
   const [breachPayload, setBreachPayload] = useState<any>(null);
   const [reactionTime, setReactionTime] = useState<number | undefined>(undefined);
+  const [useTemplateIframe, setUseTemplateIframe] = useState(true);
+
+  // Listen for Interception Bridge events emitted by HTML landing page templates
+  useEffect(() => {
+    const handleBridgeMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'MENTEKO_COMPROMISED') {
+        handleDrillComplete({
+          status: 'compromised',
+          payload: {
+            sessionRisk: 'Critical - Unverified Credential Entry on Phishing Landing Page Template',
+          },
+        });
+      }
+    };
+
+    window.addEventListener('message', handleBridgeMessage);
+    return () => window.removeEventListener('message', handleBridgeMessage);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -124,58 +142,79 @@ export function DrillView() {
     );
   }
 
+  const templateUrl = `/api/drills/page/${token || `preview?drill=${drill.id}`}`;
+
   // Main interactive phishing landing page
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
       {/* Top Admin / Preview Mode Bar (Only visible if opened WITHOUT a real employee token) */}
       {!token && (
         <aside aria-label="Simulation Preview Bar" className="sticky top-0 z-50 bg-[#0f172a] border-b border-[#334155] px-4 py-2 flex items-center justify-between text-xs text-[#94a3b8]">
           <div className="flex items-center gap-2">
             <Eye size={13} className="text-[#38bdf8]" />
-            <span className="font-semibold text-white">Employee Simulation Preview Mode</span>
+            <span className="font-semibold text-white">Simulation Template Preview Mode</span>
             <span className="text-[#64748b]">·</span>
             <span className="font-mono text-[#cbd5e1]">{drill.title}</span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/simulate')}
-            className="text-xs text-[#94a3b8] hover:text-white h-7 px-2.5"
-          >
-            <ArrowLeft size={12} className="mr-1.5" /> Return to Platform
-          </Button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setUseTemplateIframe(!useTemplateIframe)}
+              className="text-[11px] text-cyan hover:underline"
+            >
+              {useTemplateIframe ? 'Switch to Standalone UI' : 'Switch to Raw HTML Template'}
+            </button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/simulate')}
+              className="text-xs text-[#94a3b8] hover:text-white h-7 px-2.5"
+            >
+              <ArrowLeft size={12} className="mr-1.5" /> Return to Platform
+            </Button>
+          </div>
         </aside>
       )}
 
-      {/* Landing Page Content */}
-      {drill.id === 'drill-iphone-giveaway' && (
-        <IPhoneGiveawayDrill drill={drill} token={token} onComplete={handleDrillComplete} />
-      )}
+      {/* Render via Industry-Standard Pre-built HTML Template Engine */}
+      {useTemplateIframe ? (
+        <iframe
+          src={templateUrl}
+          title={drill.title}
+          className="w-full h-screen border-0 block"
+          sandbox="allow-scripts allow-forms allow-same-origin"
+          onError={() => setUseTemplateIframe(false)}
+        />
+      ) : (
+        <>
+          {drill.id === 'drill-iphone-giveaway' && (
+            <IPhoneGiveawayDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
 
-      {drill.id === 'drill-bank-webmail' && (
-        <AuthenticBankPortal drill={drill} token={token} onComplete={handleDrillComplete} />
-      )}
+          {drill.id === 'drill-bank-webmail' && (
+            <AuthenticBankPortal drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
 
-      {drill.id === 'drill-cbe-birr' && (
-        <AuthenticCBEBirrPortal drill={drill} token={token} onComplete={handleDrillComplete} />
-      )}
+          {drill.id === 'drill-cbe-birr' && (
+            <AuthenticCBEBirrPortal drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
 
-      {drill.id === 'drill-telebirr-fraud' && (
-        <TelebirrAppDrill drill={drill} token={token} onComplete={handleDrillComplete} />
-      )}
+          {drill.id === 'drill-telebirr-fraud' && (
+            <TelebirrAppDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
 
-      {drill.id === 'drill-deepfake-audio' && (
-        <DeepfakeAudioDrill drill={drill} token={token} onComplete={handleDrillComplete} />
-      )}
+          {drill.id === 'drill-deepfake-audio' && (
+            <DeepfakeAudioDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
 
-      {drill.id === 'drill-m365-oauth' && (
-        <M365OAuthDrill drill={drill} token={token} onComplete={handleDrillComplete} />
-      )}
+          {drill.id === 'drill-m365-oauth' && (
+            <M365OAuthDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
 
-      {/* Fallback for other drill types */}
-      {!['drill-iphone-giveaway', 'drill-bank-webmail', 'drill-cbe-birr', 'drill-telebirr-fraud', 'drill-deepfake-audio', 'drill-m365-oauth'].includes(
-        drill.id
-      ) && <AuthenticBankPortal drill={drill} token={token} onComplete={handleDrillComplete} />}
+          {!['drill-iphone-giveaway', 'drill-bank-webmail', 'drill-cbe-birr', 'drill-telebirr-fraud', 'drill-deepfake-audio', 'drill-m365-oauth'].includes(
+            drill.id
+          ) && <AuthenticBankPortal drill={drill} token={token} onComplete={handleDrillComplete} />}
+        </>
+      )}
 
       {/* Breach Interception Modal (Simulates real-world impact before training) */}
       {showBreachModal && (

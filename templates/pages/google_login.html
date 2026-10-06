@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — Google Accounts</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #ffffff;
+    color: #202124;
+    font-family: 'Google Sans', Roboto, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .center-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .box {
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    max-width: 450px;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+  }
+  .google-logo { font-size: 26px; font-weight: 500; margin-bottom: 12px; }
+  h1 { font-size: 24px; font-weight: 400; color: #202124; margin-bottom: 8px; }
+  .sub { font-size: 15px; color: #202124; margin-bottom: 30px; }
+  .field { margin-bottom: 18px; text-align: left; }
+  .field input {
+    width: 100%;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    padding: 13px 15px;
+    font-size: 15px;
+    outline: none;
+    color: #202124;
+    transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: #1a73e8; }
+  .forgot-link {
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 26px;
+  }
+  .create-link { color: #1a73e8; font-size: 14px; text-decoration: none; font-weight: 500; }
+  .btn-next {
+    background: #1a73e8;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-next:hover { background: #1765cc; }
+  footer {
+    max-width: 450px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #5f6368;
+  }
+  footer a { color: #5f6368; text-decoration: none; margin-left: 14px; }
+</style>
+</head>
+<body>
+
+<div class="center-container">
+  <div class="box">
+    <div class="google-logo">
+      <span style="color:#4285f4;">G</span><span style="color:#ea4335;">o</span><span style="color:#fbbc05;">o</span><span style="color:#4285f4;">g</span><span style="color:#34a853;">l</span><span style="color:#ea4335;">e</span>
+    </div>
+
+    <h1>Sign in</h1>
+    <p class="sub">to continue to <b>Google Workspace</b></p>
+
+    <form id="google-login-form">
+      <div class="field">
+        <input type="email" required placeholder="Email or phone" name="identifier" autofocus>
+      </div>
+
+      <div class="field">
+        <input type="password" required placeholder="Enter your password" name="password">
+      </div>
+
+      <a href="#" class="forgot-link">Forgot password?</a>
+
+      <div class="actions">
+        <a href="#" class="create-link">Create account</a>
+        <button type="submit" class="btn-next">Next</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <span>English (United States)</span>
+  <div>
+    <a href="#">Help</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+  </div>
+</footer>
+
+</body>
+</html>

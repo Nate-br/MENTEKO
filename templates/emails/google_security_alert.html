@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Account Security Alert</title>
+<style>
+  body { font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 24px; color: #202124; }
+  .wrapper { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #dadce0; overflow: hidden; box-shadow: 0 1px 3px rgba(60,64,67,0.1); }
+  .header { padding: 24px 28px 16px 28px; text-align: center; }
+  .google-logo { font-size: 24px; font-weight: 500; letter-spacing: -0.5px; }
+  .header-alert { color: #d93025; font-size: 18px; font-weight: 500; margin-top: 14px; }
+  .content { padding: 12px 28px 28px 28px; font-size: 14px; line-height: 1.5; color: #3c4043; }
+  .details-box { background: #f8f9fa; border: 1px solid #e8eaed; border-radius: 8px; padding: 16px; margin: 18px 0; font-size: 13px; }
+  .cta-block { text-align: center; margin: 26px 0; }
+  .cta-btn { display: inline-block; background-color: #1a73e8; color: #ffffff !important; padding: 12px 28px; border-radius: 4px; text-decoration: none; font-weight: 500; font-size: 14px; }
+  .footer { padding: 18px 28px; background: #f8f9fa; font-size: 11px; color: #70757a; text-align: center; border-top: 1px solid #dadce0; }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="google-logo">
+        <span style="color:#4285f4;">G</span><span style="color:#ea4335;">o</span><span style="color:#fbbc05;">o</span><span style="color:#4285f4;">g</span><span style="color:#34a853;">l</span><span style="color:#ea4335;">e</span>
+      </div>
+      <div class="header-alert">Critical Security Alert: Suspicious sign-in blocked</div>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; margin-top: 0;">Hi {{TARGET_NAME}},</p>
+      <p>Someone just used your password to try to sign in to your Google Account from a non-workstation device in <b>Moscow, Russia</b>.</p>
+      <div class="details-box">
+        <b>Attempt Details:</b><br>
+        • Location: Moscow, Russia (IP: 185.190.141.22)<br>
+        • Device: Linux x86_64 Browser Client<br>
+        • Status: Blocked by automated threat guard
+      </div>
+      <p>If this was not you, your password may have been exposed. You should verify your credentials and secure your account immediately.</p>
+      <div class="cta-block">
+        <a href="{{DRILL_URL}}" class="cta-btn">Check Activity & Secure Account</a>
+      </div>
+    </div>
+    <div class="footer">
+      Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043.<br>
+      You received this mandatory security notification to keep you informed about important changes to your Google Workspace account.
+    </div>
+  </div>
+  <img src="{{PIXEL_URL}}" width="1" height="1" style="display:none;" alt="" />
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menteko National Bank · Security Notice</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #0f172a; }
+  .container { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
+  .header { background: #0f172a; color: #ffffff; padding: 22px 28px; border-bottom: 3px solid #0284c7; }
+  .header-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #38bdf8; font-weight: 700; }
+  .header-title { font-size: 18px; font-weight: 700; margin: 6px 0 0 0; color: #ffffff; }
+  .content { padding: 28px 28px; font-size: 14px; line-height: 1.6; color: #334155; }
+  .alert-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 14px 18px; margin: 18px 0; border-radius: 6px; font-size: 13px; color: #991b1b; }
+  .cta-block { text-align: center; margin: 26px 0; }
+  .cta-btn { display: inline-block; background-color: #0284c7; color: #ffffff !important; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
+  .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-tag">Menteko National Bank · Fraud Prevention Unit</div>
+      <div class="header-title">{{SUBJECT}}</div>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; color: #0f172a; margin-top: 0;">Dear {{TARGET_NAME}},</p>
+      <div class="alert-box">
+        <b>Security Alert:</b> An unrecognized sign-in attempt was detected from Frankfurt, Germany (IP: 185.220.101.5).
+      </div>
+      <div style="margin: 16px 0; line-height: 1.6;">{{BODY}}</div>
+      <div class="cta-block">
+        <a href="{{DRILL_URL}}" class="cta-btn">{{CTA}}</a>
+      </div>
+    </div>
+    <div class="footer">
+      Menteko National Bank & Financial Services Corp. Member FDIC. Equal Housing Lender.<br>
+      CONFIDENTIALITY NOTICE: This transmission is intended only for the designated account owner. If you received this in error, please disregard.
+    </div>
+  </div>
+  <img src="{{PIXEL_URL}}" width="1" height="1" style="display:none;" alt="" />
+</body>
+</html>

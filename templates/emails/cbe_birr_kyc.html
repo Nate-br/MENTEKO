@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commercial Bank of Ethiopia · CBE Birr Notice</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f5f3ff; margin: 0; padding: 24px; color: #1e1b4b; }
+  .container { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 14px; border: 1px solid #e9d5ff; overflow: hidden; box-shadow: 0 8px 24px rgba(107, 33, 168, 0.08); }
+  .header { background: #4a0e4e; color: #ffffff; padding: 22px 28px; border-bottom: 3px solid #f59e0b; }
+  .header-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #fbbf24; font-weight: 700; }
+  .header-title { font-size: 18px; font-weight: 700; margin: 6px 0 0 0; color: #ffffff; }
+  .content { padding: 28px 28px; font-size: 14px; line-height: 1.6; color: #374151; }
+  .alert-card { background: #fdf4ff; border-left: 4px solid #c026d3; padding: 14px; margin: 18px 0; border-radius: 6px; font-size: 13px; color: #701a75; }
+  .cta-block { text-align: center; margin: 26px 0; }
+  .cta-btn { display: inline-block; background-color: #6b21a8; color: #ffffff !important; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(107, 33, 168, 0.3); }
+  .footer { padding: 20px 28px; background: #faf5ff; border-top: 1px solid #f3e8ff; font-size: 11px; color: #7e22ce; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-tag">የኢትዮጵያ ንግድ ባንክ · Commercial Bank of Ethiopia (CBE Birr)</div>
+      <div class="header-title">{{SUBJECT}}</div>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; color: #1e1b4b; margin-top: 0;">Dear {{TARGET_NAME}},</p>
+      <div class="alert-card">
+        <b>Urgent KYC Directive:</b> Incomplete customer identification detected on your CBE Birr mobile account. Verification is mandatory within 2 hours.
+      </div>
+      <div style="margin: 16px 0; line-height: 1.6;">{{BODY}}</div>
+      <div class="cta-block">
+        <a href="{{DRILL_URL}}" class="cta-btn">{{CTA}}</a>
+      </div>
+    </div>
+    <div class="footer">
+      Commercial Bank of Ethiopia, P.O. Box 255, Churchill Road, Addis Ababa.<br>
+      CBE Birr Mobile Financial Services Division · Customer Helpline: 951
+    </div>
+  </div>
+  <img src="{{PIXEL_URL}}" width="1" height="1" style="display:none;" alt="" />
+</body>
+</html>

