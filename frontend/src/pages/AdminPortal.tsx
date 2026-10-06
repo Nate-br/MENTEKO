@@ -305,7 +305,7 @@ export function AdminPortal() {
             onClick={() => setActiveTab(t.id as any)}
             className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${
               activeTab === t.id
-                ? 'bg-cyan text-bg shadow-md'
+                ? 'bg-gradient-to-r from-[#8f1eae] to-[#a834cb] text-white font-bold shadow-[0_4px_14px_rgba(143,30,174,0.25)]'
                 : 'bg-panel-1 border border-line text-muted hover:text-text hover:border-cyan/30'
             }`}
           >
@@ -534,19 +534,19 @@ export function AdminPortal() {
               )}
 
               {/* Delivery method notice */}
-              <div className="rounded-xl border border-cyan/30 bg-cyan/5 p-3.5 space-y-1">
+              <div className="rounded-xl border border-line bg-panel-2/80 p-3.5 space-y-1.5 shadow-sm">
                 <div className="flex items-center gap-2 text-xs text-cyan font-bold">
-                  <Mail size={14} />
+                  <Mail size={14} className="text-cyan" />
                   <span>DirectAdmin SMTP Delivery Guaranteed</span>
                 </div>
                 <p className="text-[11px] text-muted leading-relaxed">
                   The simulation email will be delivered directly to the employee's inbox via authenticated DirectAdmin Exim MTA from{' '}
-                  <span className="text-slate-200 font-mono">{selectedSenderEmail}</span>. The email contains a tracked drill link that logs their response.
+                  <span className="text-text font-mono font-semibold">{selectedSenderEmail}</span>. The email contains a tracked drill link that logs their response.
                 </p>
               </div>
 
               {launchSuccessMsg && (
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-xs text-emerald-300 flex items-center justify-between gap-2">
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-xs text-emerald-300 flex items-center justify-between gap-2 shadow-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
                     <span>{launchSuccessMsg}</span>
@@ -561,22 +561,21 @@ export function AdminPortal() {
                 </div>
               )}
 
-              <Button
+              <button
                 type="submit"
-                variant="primary"
                 disabled={launching}
-                className="w-full text-xs font-bold py-3 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan to-blue-600 hover:from-cyan/90 hover:to-blue-500 text-bg shadow-lg"
+                className="w-full text-sm font-bold py-3.5 px-6 flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-[#8f1eae] via-[#9e27c1] to-[#b43ed8] text-white shadow-[0_4px_20px_rgba(143,30,174,0.35)] hover:shadow-[0_6px_28px_rgba(143,30,174,0.5)] hover:brightness-110 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {launching ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" /> Delivering Email via DirectAdmin MTA...
+                    <Loader2 size={16} className="animate-spin text-white" /> Delivering Email via DirectAdmin MTA...
                   </>
                 ) : (
                   <>
-                    <Send size={14} /> Send Phishing Simulation Email Now
+                    <Send size={16} className="text-white" /> Send Phishing Simulation Email Now
                   </>
                 )}
-              </Button>
+              </button>
             </form>
           </div>
 

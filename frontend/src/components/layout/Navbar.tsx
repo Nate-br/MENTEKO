@@ -6,7 +6,6 @@ const links = [
   { to: '/learn', label: 'Learn' },
   { to: '/simulate', label: 'Simulate' },
   { to: '/assessment', label: 'Assessment' },
-  { to: '/admin', label: 'Admin Console' },
   { to: '/about', label: 'About' },
 ];
 
