@@ -114,16 +114,30 @@ def init_db():
         drill_id TEXT NOT NULL,
         target_email TEXT,
         target_name TEXT,
+        sender_email TEXT,
+        department TEXT,
         status TEXT NOT NULL,
         opened_at TEXT,
         clicked_at TEXT,
         submitted_at TEXT,
         reported_at TEXT,
+        trained_at TEXT,
         reaction_time_seconds INTEGER,
+        compromised_details TEXT,
         device_info TEXT,
         created_at TEXT NOT NULL
     )
     ''')
+
+    # Auto-migration for drills table
+    cursor.execute("PRAGMA table_info(drills)")
+    existing_cols = [r['name'] for r in cursor.fetchall()]
+    for col_name in ['sender_email', 'department', 'trained_at', 'compromised_details']:
+        if col_name not in existing_cols:
+            try:
+                cursor.execute(f"ALTER TABLE drills ADD COLUMN {col_name} TEXT")
+            except Exception:
+                pass
 
     # Ensure scenarios table has clean 15 base scenarios (remove legacy sim-interactive-*)
     cursor.execute("DELETE FROM scenarios WHERE id LIKE 'sim-interactive-%'")
@@ -448,14 +462,76 @@ def create_user():
 
 
 # ============================================================================
-# EMAIL SERVICE (SMTP DRILLS & CERTIFICATES)
+# EMAIL SERVICE (SMTP DRILLS, DIRECTADMIN INTEGRATION & CERTIFICATES)
 # ============================================================================
-def send_smtp_email(to_email, subject, html_content, text_content=None, from_name="MENTEKO Cyber Resilience"):
-    sender = DEFAULT_FROM_EMAIL
+DA_HOST = os.environ.get('DA_HOST', 'https://127.0.0.1:2222')
+DA_USER = os.environ.get('DA_USER', 'eescprut')
+DA_PASS = os.environ.get('DA_PASS', 'G0dworksforme@2026.')
+DA_DOMAIN = os.environ.get('DA_DOMAIN', 'savethegeneration.com.et')
+
+def get_directadmin_mailboxes():
+    try:
+        import urllib.request, ssl, base64, urllib.parse
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        auth = base64.b64encode(f"{DA_USER}:{DA_PASS}".encode()).decode("ascii")
+        url = f"{DA_HOST}/CMD_API_POP?domain={DA_DOMAIN}&action=list"
+        req = urllib.request.Request(url, headers={"Authorization": f"Basic {auth}"})
+        res = urllib.request.urlopen(req, context=ctx, timeout=6).read().decode("utf-8")
+        parsed = urllib.parse.parse_qs(res)
+        users = parsed.get("list[]", [])
+        if users:
+            return [f"{u}@{DA_DOMAIN}" for u in users]
+    except Exception as e:
+        app.logger.warning(f"DirectAdmin API query failed: {e}")
+
+    # Fallback to confirmed active DirectAdmin accounts
+    return [
+        f"security-alerts@{DA_DOMAIN}",
+        f"drills@{DA_DOMAIN}",
+        f"hr-notice@{DA_DOMAIN}",
+        f"admin@{DA_DOMAIN}",
+        f"noreply@{DA_DOMAIN}"
+    ]
+
+def create_directadmin_mailbox(username, password, quota=500):
+    try:
+        import urllib.request, ssl, base64, urllib.parse
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        clean_user = username.split('@')[0].strip().lower()
+        auth = base64.b64encode(f"{DA_USER}:{DA_PASS}".encode()).decode("ascii")
+        url = f"{DA_HOST}/CMD_API_POP"
+        data = urllib.parse.urlencode({
+            "action": "create",
+            "domain": DA_DOMAIN,
+            "user": clean_user,
+            "passwd": password,
+            "passwd2": password,
+            "quota": quota
+        }).encode("utf-8")
+
+        req = urllib.request.Request(url, data=data, headers={"Authorization": f"Basic {auth}"})
+        res = urllib.request.urlopen(req, context=ctx, timeout=8).read().decode("utf-8")
+        parsed = urllib.parse.parse_qs(res)
+        is_error = parsed.get("error", ["1"])[0] == "1"
+        msg = parsed.get("text", ["Unknown response"])[0]
+        return not is_error, msg
+    except Exception as e:
+        return False, str(e)
+
+
+def send_smtp_email(to_email, subject, html_content, text_content=None, from_name="MENTEKO Cyber Resilience", from_email=None):
+    sender = from_email or DEFAULT_FROM_EMAIL
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = f"{from_name} <{sender}>"
     msg['To'] = to_email
+    msg['Reply-To'] = sender
 
     if text_content:
         msg.attach(MIMEText(text_content, 'plain', 'utf-8'))
@@ -840,18 +916,35 @@ def record_drill_action():
             reaction_time = 12
 
     new_status = session.get('status')
+    compromised_payload = None
+
     if action == 'click_link':
         new_status = 'clicked'
         cursor.execute('UPDATE drills SET status = ?, clicked_at = ?, reaction_time_seconds = ? WHERE token = ?', (new_status, now, reaction_time, token))
     elif action == 'submit_credentials':
         new_status = 'compromised'
-        cursor.execute('UPDATE drills SET status = ?, submitted_at = ?, reaction_time_seconds = ? WHERE token = ?', (new_status, now, reaction_time, token))
+        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr or '197.156.103.42')
+        if ',' in client_ip:
+            client_ip = client_ip.split(',')[0].strip()
+        compromised_data = {
+            "simulatedBreach": True,
+            "ipAddress": client_ip,
+            "userAgent": request.headers.get('User-Agent', 'Desktop Client'),
+            "capturedFields": ["account_identity", "credential_hash_intercepted"],
+            "compromisedAt": now,
+            "sessionRisk": "Critical Vulnerability Triggered — Account Compromised"
+        }
+        cursor.execute('UPDATE drills SET status = ?, submitted_at = ?, reaction_time_seconds = ?, compromised_details = ? WHERE token = ?', (new_status, now, reaction_time, json.dumps(compromised_data), token))
+        compromised_payload = compromised_data
     elif action == 'report_phishing':
         new_status = 'reported'
         cursor.execute('UPDATE drills SET status = ?, reported_at = ?, reaction_time_seconds = ? WHERE token = ?', (new_status, now, reaction_time, token))
     elif action == 'verify_secondary':
         new_status = 'verified'
         cursor.execute('UPDATE drills SET status = ?, reaction_time_seconds = ? WHERE token = ?', (new_status, reaction_time, token))
+    elif action == 'complete_training':
+        new_status = 'trained'
+        cursor.execute('UPDATE drills SET status = ?, trained_at = ? WHERE token = ?', (new_status, now, token))
 
     conn.commit()
     conn.close()
@@ -863,6 +956,7 @@ def record_drill_action():
         "status": new_status,
         "action": action,
         "reactionTime": reaction_time,
+        "compromisedPayload": compromised_payload,
         "drill": drill,
         "teachableTakeaways": drill.get('indicators', []) if drill else []
     })
@@ -875,17 +969,20 @@ def get_drill_analytics():
     cursor.execute('SELECT COUNT(*) as total FROM drills')
     total = cursor.fetchone()['total']
 
-    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('clicked', 'compromised', 'reported', 'verified', 'opened')")
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('clicked', 'compromised', 'reported', 'verified', 'opened', 'trained')")
     opened = cursor.fetchone()['cnt']
 
-    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('clicked', 'compromised')")
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('clicked', 'compromised', 'trained')")
     clicked = cursor.fetchone()['cnt']
 
-    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status = 'compromised'")
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('compromised', 'trained')")
     compromised = cursor.fetchone()['cnt']
 
     cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('reported', 'verified')")
     reported = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status = 'trained'")
+    trained = cursor.fetchone()['cnt']
 
     conn.close()
 
@@ -896,11 +993,275 @@ def get_drill_analytics():
         "clickedCount": clicked,
         "compromisedCount": compromised,
         "reportedCount": reported,
+        "trainedCount": trained,
         "openRate": round((opened / total * 100), 1) if total else 0,
         "clickRate": round((clicked / total * 100), 1) if total else 0,
         "compromiseRate": round((compromised / total * 100), 1) if total else 0,
-        "reportingRate": round((reported / total * 100), 1) if total else 0
+        "reportingRate": round((reported / total * 100), 1) if total else 0,
+        "trainingRate": round((trained / total * 100), 1) if total else 0
     })
+
+
+# ============================================================================
+# ENTERPRISE ADMIN CONSOLE & MONITORING APIS
+# ============================================================================
+
+@app.route('/api/admin/emails', methods=['GET'])
+def admin_get_emails():
+    mailboxes = get_directadmin_mailboxes()
+    return jsonify({
+        "success": True,
+        "domain": DA_DOMAIN,
+        "count": len(mailboxes),
+        "mailboxes": mailboxes
+    })
+
+
+@app.route('/api/admin/emails/create', methods=['POST'])
+def admin_create_email():
+    data = request.get_json(silent=True) or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    quota = int(data.get('quota', 500))
+
+    if not username or not password:
+        return jsonify({"success": False, "message": "Username and password are required"}), 400
+
+    clean_user = username.split('@')[0].strip().lower()
+    success, msg = create_directadmin_mailbox(clean_user, password, quota)
+    if success:
+        return jsonify({
+            "success": True,
+            "message": f"DirectAdmin mailbox {clean_user}@{DA_DOMAIN} created successfully",
+            "email": f"{clean_user}@{DA_DOMAIN}"
+        })
+    else:
+        return jsonify({
+            "success": False,
+            "message": f"Failed to create DirectAdmin mailbox: {msg}"
+        }), 400
+
+
+@app.route('/api/admin/drills', methods=['GET'])
+def admin_get_drills():
+    status = request.args.get('status')
+    search = request.args.get('search', '').strip().lower()
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    query = "SELECT * FROM drills WHERE 1=1"
+    params = []
+
+    if status and status != 'all':
+        query += " AND status = ?"
+        params.append(status)
+
+    if search:
+        query += " AND (LOWER(target_name) LIKE ? OR LOWER(target_email) LIKE ? OR LOWER(department) LIKE ?)"
+        wild = f"%{search}%"
+        params.extend([wild, wild, wild])
+
+    query += " ORDER BY created_at DESC LIMIT 300"
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+
+    drills_list = []
+    base_url = os.environ.get('BASE_URL', 'https://menteko.savethegeneration.com.et')
+
+    for r in rows:
+        d = dict(r)
+        d['drillUrl'] = f"{base_url}/drill?token={d['token']}&drill={d['drill_id']}"
+        if d.get('compromised_details') and isinstance(d['compromised_details'], str):
+            try:
+                d['compromised_details'] = json.loads(d['compromised_details'])
+            except Exception:
+                pass
+        drills_list.append(d)
+
+    return jsonify({
+        "success": True,
+        "count": len(drills_list),
+        "drills": drills_list
+    })
+
+
+@app.route('/api/admin/drills/stats', methods=['GET'])
+def admin_get_stats():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) as total FROM drills")
+    total = cursor.fetchone()['total']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('opened', 'clicked', 'compromised', 'reported', 'trained')")
+    opened = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('clicked', 'compromised', 'trained')")
+    clicked = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status IN ('compromised', 'trained')")
+    compromised = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status = 'reported'")
+    reported = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT COUNT(*) as cnt FROM drills WHERE status = 'trained'")
+    trained = cursor.fetchone()['cnt']
+
+    cursor.execute("SELECT AVG(reaction_time_seconds) as avg_react FROM drills WHERE reaction_time_seconds IS NOT NULL")
+    avg_react_row = cursor.fetchone()
+    avg_reaction_time = round(avg_react_row['avg_react'], 1) if avg_react_row and avg_react_row['avg_react'] else 0
+
+    cursor.execute("SELECT department, COUNT(*) as cnt, SUM(CASE WHEN status IN ('compromised', 'trained') THEN 1 ELSE 0 END) as comp_cnt FROM drills GROUP BY department")
+    dept_rows = cursor.fetchall()
+    dept_stats = []
+    for r in dept_rows:
+        d_name = r['department'] or 'General'
+        d_total = r['cnt']
+        d_comp = r['comp_cnt'] or 0
+        dept_stats.append({
+            "department": d_name,
+            "total": d_total,
+            "compromised": d_comp,
+            "riskRate": round((d_comp / d_total * 100), 1) if d_total else 0
+        })
+
+    cursor.execute("SELECT * FROM drills ORDER BY created_at DESC LIMIT 6")
+    recent = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+
+    return jsonify({
+        "success": True,
+        "metrics": {
+            "totalDispatched": total,
+            "openedCount": opened,
+            "openRate": round((opened / total * 100), 1) if total else 0,
+            "clickedCount": clicked,
+            "clickRate": round((clicked / total * 100), 1) if total else 0,
+            "compromisedCount": compromised,
+            "compromiseRate": round((compromised / total * 100), 1) if total else 0,
+            "reportedCount": reported,
+            "reportingRate": round((reported / total * 100), 1) if total else 0,
+            "trainedCount": trained,
+            "trainingRate": round((trained / total * 100), 1) if total else 0,
+            "avgReactionTime": avg_reaction_time
+        },
+        "departmentBreakdown": dept_stats,
+        "recentActivity": recent
+    })
+
+
+@app.route('/api/admin/drills/launch', methods=['POST'])
+def admin_launch_drills():
+    data = request.get_json(silent=True) or {}
+    drill_id = data.get('drillId') or 'drill-bank-webmail'
+    sender_email = data.get('senderEmail') or 'security-alerts@savethegeneration.com.et'
+    send_email = bool(data.get('sendEmail', False))
+    targets = data.get('targets', [])
+
+    if not targets:
+        return jsonify({"success": False, "message": "At least one target employee is required"}), 400
+
+    drill = next((d for d in DYNAMIC_DRILLS if d['id'] == drill_id), None)
+    if not drill:
+        return jsonify({"success": False, "message": "Invalid drill scenario"}), 404
+
+    base_url = os.environ.get('BASE_URL', 'https://menteko.savethegeneration.com.et')
+    now = datetime.now(timezone.utc).isoformat()
+    results = []
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    for t in targets:
+        target_name = (t.get('name') or 'Team Member').strip()
+        target_email = (t.get('email') or '').strip()
+        dept = (t.get('department') or 'General').strip()
+
+        token = str(uuid.uuid4())
+        drill_url = f"{base_url}/drill?token={token}&drill={drill_id}"
+
+        cursor.execute('''
+            INSERT INTO drills
+            (id, token, drill_id, target_email, target_name, sender_email, department, status, reaction_time_seconds, device_info, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (str(uuid.uuid4()), token, drill_id, target_email or None, target_name, sender_email, dept, 'dispatched', None, 'Admin Console', now))
+
+        email_dispatched = False
+        if send_email and target_email:
+            tmpl = drill.get('emailTemplate') or {
+                "subject": f"Action Required: {drill.get('title')}",
+                "body": f"Dear {target_name},\\n\\nPlease complete the authorized security verification drill using the link below:\\n\\n",
+                "callToAction": "Verify Credentials"
+            }
+            html_email = f"""
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="utf-8">
+            <style>
+              body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f6f8; margin: 0; padding: 24px; color: #1a202c; }}
+              .card {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
+              .btn {{ display: inline-block; background-color: #1a73e8; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 16px 0; }}
+              .disclaimer {{ margin-top: 24px; padding-top: 16px; border-top: 1px solid #edf2f7; font-size: 11px; color: #718096; }}
+            </style>
+            </head>
+            <body>
+              <div class="card">
+                <h3 style="margin-top: 0; color: #2d3748;">{tmpl.get('subject', 'Security Notice')}</h3>
+                <p style="white-space: pre-line; line-height: 1.6;">{tmpl.get('body', '')}</p>
+                <p style="text-align: center;">
+                  <a href="{drill_url}" class="btn">{tmpl.get('callToAction', 'Review Notification')}</a>
+                </p>
+                <div class="disclaimer">
+                  🔒 <b>MENTEKO Authorized Cyber Simulation:</b> Controlled resilience training. DirectAdmin Verified Dispatch ({sender_email}).
+                </div>
+              </div>
+            </body>
+            </html>
+            """
+            try:
+                send_smtp_email(
+                    to_email=target_email,
+                    subject=tmpl.get('subject', 'Security Notice'),
+                    html_content=html_email,
+                    text_content=f"{tmpl.get('body', '')}\\n\\nDrill Link: {drill_url}",
+                    from_name=drill.get('title', 'Cyber Defense Team'),
+                    from_email=sender_email
+                )
+                email_dispatched = True
+            except Exception as e:
+                app.logger.warning(f"Admin drill email delivery error: {e}")
+
+        results.append({
+            "token": token,
+            "drillUrl": drill_url,
+            "name": target_name,
+            "email": target_email,
+            "department": dept,
+            "emailSent": email_dispatched
+        })
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "success": True,
+        "message": f"Successfully launched {len(results)} drill sessions",
+        "results": results
+    })
+
+
+@app.route('/api/admin/drills/<drill_id>', methods=['DELETE'])
+def admin_delete_drill(drill_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM drills WHERE id = ? OR token = ?", (drill_id, drill_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True, "message": "Drill record removed"})
 
 
 # ============================================================================

@@ -141,6 +141,15 @@ export const api = {
       throw normalizeError(error);
     }
   },
+
+  delete: async <T = any>(url: string, config?: any): Promise<T> => {
+    try {
+      const { data } = await client.delete(url, config);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  },
 };
 
 export default api;

@@ -6,6 +6,8 @@ import { CBEBirrPhoneDrill } from '@/components/simulation/drills/CBEBirrPhoneDr
 import { TelebirrAppDrill } from '@/components/simulation/drills/TelebirrAppDrill';
 import { DeepfakeAudioDrill } from '@/components/simulation/drills/DeepfakeAudioDrill';
 import { M365OAuthDrill } from '@/components/simulation/drills/M365OAuthDrill';
+import { BreachInterceptionModal } from '@/components/simulation/BreachInterceptionModal';
+import { TeachableMomentTraining } from '@/components/simulation/TeachableMomentTraining';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -20,6 +22,10 @@ export function DrillView() {
 
   const [drill, setDrill] = useState<DynamicDrill | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showBreachModal, setShowBreachModal] = useState(false);
+  const [showTraining, setShowTraining] = useState(false);
+  const [breachPayload, setBreachPayload] = useState<any>(null);
+  const [reactionTime, setReactionTime] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     let isMounted = true;
@@ -60,6 +66,20 @@ export function DrillView() {
       isMounted = false;
     };
   }, [drillId, drillParam, token]);
+
+  const handleDrillComplete = (result: { status: string; reactionTime?: number; payload?: any }) => {
+    setReactionTime(result.reactionTime || 14);
+    if (result.status === 'compromised') {
+      setBreachPayload(
+        result.payload || {
+          sessionRisk: 'Critical - Unverified Click & Credential Entry',
+        }
+      );
+      setShowBreachModal(true);
+    } else {
+      setShowTraining(true);
+    }
+  };
 
   if (loading) {
     return (
@@ -106,26 +126,49 @@ export function DrillView() {
         )}
       </div>
 
-      {/* Render the matching dynamic interactive drill component */}
-      {drill.id === 'drill-cbe-birr' && (
-        <CBEBirrPhoneDrill drill={drill} token={token} onComplete={() => {}} />
+      {/* If training mode is active */}
+      {showTraining ? (
+        <TeachableMomentTraining
+          drill={drill}
+          token={token}
+          onRestartDrill={() => setShowTraining(false)}
+          onFinished={() => {}}
+        />
+      ) : (
+        <>
+          {drill.id === 'drill-cbe-birr' && (
+            <CBEBirrPhoneDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
+
+          {drill.id === 'drill-telebirr-fraud' && (
+            <TelebirrAppDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
+
+          {drill.id === 'drill-deepfake-audio' && (
+            <DeepfakeAudioDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
+
+          {drill.id === 'drill-m365-oauth' && (
+            <M365OAuthDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+          )}
+
+          {(drill.id === 'drill-bank-webmail' ||
+            !['drill-cbe-birr', 'drill-telebirr-fraud', 'drill-deepfake-audio', 'drill-m365-oauth'].includes(
+              drill.id
+            )) && <BankWebmailDrill drill={drill} token={token} onComplete={handleDrillComplete} />}
+        </>
       )}
 
-      {drill.id === 'drill-telebirr-fraud' && (
-        <TelebirrAppDrill drill={drill} token={token} onComplete={() => {}} />
-      )}
-
-      {drill.id === 'drill-deepfake-audio' && (
-        <DeepfakeAudioDrill drill={drill} token={token} onComplete={() => {}} />
-      )}
-
-      {drill.id === 'drill-m365-oauth' && (
-        <M365OAuthDrill drill={drill} token={token} onComplete={() => {}} />
-      )}
-
-      {(drill.id === 'drill-bank-webmail' ||
-        !['drill-cbe-birr', 'drill-telebirr-fraud', 'drill-deepfake-audio', 'drill-m365-oauth'].includes(drill.id)) && (
-        <BankWebmailDrill drill={drill} token={token} onComplete={() => {}} />
+      {/* Breach Interception Modal (Simulates real-world impact before training) */}
+      {showBreachModal && (
+        <BreachInterceptionModal
+          payload={breachPayload}
+          reactionTime={reactionTime}
+          onProceedToTraining={() => {
+            setShowBreachModal(false);
+            setShowTraining(true);
+          }}
+        />
       )}
     </div>
   );
