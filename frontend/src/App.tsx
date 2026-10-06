@@ -16,13 +16,16 @@ export default function App() {
     <SessionProvider>
       <BrowserRouter>
         <Routes>
+          {/* Standalone full-screen phishing simulation environments (no platform chrome) */}
+          <Route path="/drill" element={<DrillView />} />
+          <Route path="/drills/:drillId" element={<DrillView />} />
+
+          {/* Standard MENTEKO platform routes */}
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/learn" element={<Learn />} />
             <Route path="/simulate" element={<Simulate />} />
             <Route path="/simulate/:id" element={<ScenarioPage />} />
-            <Route path="/drill" element={<DrillView />} />
-            <Route path="/drills/:drillId" element={<DrillView />} />
             <Route path="/admin" element={<AdminPortal />} />
             <Route path="/result" element={<Result />} />
             <Route path="/assessment" element={<Assessment />} />

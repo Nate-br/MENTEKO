@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Clock,
   Layers,
+  Gift,
 } from 'lucide-react';
 
 const FILTER_ITEMS = [
@@ -65,7 +66,7 @@ export function Simulate() {
               Live Server Engine
             </span>
           </div>
-          <span className="font-mono text-xs text-muted">5 Multi-Phase Hands-On Environments</span>
+          <span className="font-mono text-xs text-muted">{DYNAMIC_DRILLS.length} Multi-Phase Hands-On Environments</span>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -74,6 +75,7 @@ export function Simulate() {
             const isWallet = drill.id === 'drill-telebirr-fraud';
             const isAudio = drill.id === 'drill-deepfake-audio';
             const isOAuth = drill.id === 'drill-m365-oauth';
+            const isRewards = drill.id === 'drill-iphone-giveaway';
 
             return (
               <div
@@ -83,11 +85,12 @@ export function Simulate() {
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel-2 px-2.5 py-1 text-[11px] font-medium text-slate-300">
+                      {isRewards && <Gift size={12} className="text-[#38bdf8]" />}
                       {isSmishing && <Smartphone size={12} className="text-cyan" />}
                       {isWallet && <Wallet size={12} className="text-cyan" />}
                       {isAudio && <Activity size={12} className="text-purple" />}
                       {isOAuth && <ShieldCheck size={12} className="text-amber-400" />}
-                      {!isSmishing && !isWallet && !isAudio && !isOAuth && <Mail size={12} className="text-cyan" />}
+                      {!isRewards && !isSmishing && !isWallet && !isAudio && !isOAuth && <Mail size={12} className="text-cyan" />}
                       <span className="capitalize">{drill.format.replace('DYNAMIC_', '').toLowerCase()}</span>
                     </span>
 

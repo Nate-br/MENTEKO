@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { DYNAMIC_DRILLS, getDrillById, type DynamicDrill } from '@/data/dynamicDrills';
-import { BankWebmailDrill } from '@/components/simulation/drills/BankWebmailDrill';
-import { CBEBirrPhoneDrill } from '@/components/simulation/drills/CBEBirrPhoneDrill';
+import { IPhoneGiveawayDrill } from '@/components/simulation/drills/IPhoneGiveawayDrill';
+import { AuthenticBankPortal } from '@/components/simulation/drills/AuthenticBankPortal';
+import { AuthenticCBEBirrPortal } from '@/components/simulation/drills/AuthenticCBEBirrPortal';
 import { TelebirrAppDrill } from '@/components/simulation/drills/TelebirrAppDrill';
 import { DeepfakeAudioDrill } from '@/components/simulation/drills/DeepfakeAudioDrill';
 import { M365OAuthDrill } from '@/components/simulation/drills/M365OAuthDrill';
 import { BreachInterceptionModal } from '@/components/simulation/BreachInterceptionModal';
 import { TeachableMomentTraining } from '@/components/simulation/TeachableMomentTraining';
 import { Button } from '@/components/ui/Button';
-import { ArrowLeft, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, Eye } from 'lucide-react';
 import { api } from '@/lib/api';
 
 export function DrillView() {
@@ -83,10 +84,10 @@ export function DrillView() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-[#070b13]">
         <div className="text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-cyan" />
-          <p className="mt-3 text-sm text-muted font-mono">INITIALIZING CYBER DRILL SIMULATOR...</p>
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#8f1eae]" />
+          <p className="mt-3 text-xs text-[#94a3b8] font-mono tracking-wider">CONNECTING TO SECURE GATEWAY...</p>
         </div>
       </div>
     );
@@ -94,70 +95,87 @@ export function DrillView() {
 
   if (!drill) {
     return (
-      <div className="mx-auto max-w-2xl py-20 text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
-        <h2 className="mt-4 text-2xl font-bold text-text">Simulation Drill Not Found</h2>
-        <p className="mt-2 text-sm text-muted">The requested interactive cyber drill does not exist or has expired.</p>
-        <Button variant="secondary" onClick={() => navigate('/simulate')} className="mt-6">
-          <ArrowLeft size={14} className="mr-1.5" /> Return to Simulations
-        </Button>
+      <div className="min-h-screen bg-[#070b13] flex items-center justify-center p-4">
+        <div className="max-w-md text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
+          <h2 className="mt-4 text-2xl font-bold text-white">Simulation Session Expired</h2>
+          <p className="mt-2 text-xs text-[#94a3b8]">
+            The requested drill session could not be located or has expired.
+          </p>
+          <Button variant="secondary" onClick={() => navigate('/simulate')} className="mt-6 text-xs">
+            <ArrowLeft size={13} className="mr-1.5" /> Return to Platform
+          </Button>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Top back navigation */}
-      <div className="mb-4 flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/simulate')}
-          className="text-xs text-muted hover:text-text"
-        >
-          <ArrowLeft size={13} className="mr-1.5" /> All Simulations
-        </Button>
-
-        {token && (
-          <div className="flex items-center gap-1.5 rounded-full border border-cyan/30 bg-cyan/10 px-3 py-1 font-mono text-[11px] text-cyan">
-            <Sparkles size={11} />
-            <span>LIVE SERVER DRILL SESSION ACTIVE</span>
-          </div>
-        )}
-      </div>
-
-      {/* If training mode is active */}
-      {showTraining ? (
+  // If training mode has been activated after breach interception
+  if (showTraining) {
+    return (
+      <div className="min-h-screen bg-[#070b13] px-4 py-8">
         <TeachableMomentTraining
           drill={drill}
           token={token}
           onRestartDrill={() => setShowTraining(false)}
           onFinished={() => {}}
         />
-      ) : (
-        <>
-          {drill.id === 'drill-cbe-birr' && (
-            <CBEBirrPhoneDrill drill={drill} token={token} onComplete={handleDrillComplete} />
-          )}
+      </div>
+    );
+  }
 
-          {drill.id === 'drill-telebirr-fraud' && (
-            <TelebirrAppDrill drill={drill} token={token} onComplete={handleDrillComplete} />
-          )}
-
-          {drill.id === 'drill-deepfake-audio' && (
-            <DeepfakeAudioDrill drill={drill} token={token} onComplete={handleDrillComplete} />
-          )}
-
-          {drill.id === 'drill-m365-oauth' && (
-            <M365OAuthDrill drill={drill} token={token} onComplete={handleDrillComplete} />
-          )}
-
-          {(drill.id === 'drill-bank-webmail' ||
-            !['drill-cbe-birr', 'drill-telebirr-fraud', 'drill-deepfake-audio', 'drill-m365-oauth'].includes(
-              drill.id
-            )) && <BankWebmailDrill drill={drill} token={token} onComplete={handleDrillComplete} />}
-        </>
+  // Main interactive phishing landing page
+  return (
+    <div className="min-h-screen">
+      {/* Top Admin / Preview Mode Bar (Only visible if opened WITHOUT a real employee token) */}
+      {!token && (
+        <aside aria-label="Simulation Preview Bar" className="sticky top-0 z-50 bg-[#0f172a] border-b border-[#334155] px-4 py-2 flex items-center justify-between text-xs text-[#94a3b8]">
+          <div className="flex items-center gap-2">
+            <Eye size={13} className="text-[#38bdf8]" />
+            <span className="font-semibold text-white">Employee Simulation Preview Mode</span>
+            <span className="text-[#64748b]">·</span>
+            <span className="font-mono text-[#cbd5e1]">{drill.title}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/simulate')}
+            className="text-xs text-[#94a3b8] hover:text-white h-7 px-2.5"
+          >
+            <ArrowLeft size={12} className="mr-1.5" /> Return to Platform
+          </Button>
+        </aside>
       )}
+
+      {/* Landing Page Content */}
+      {drill.id === 'drill-iphone-giveaway' && (
+        <IPhoneGiveawayDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+      )}
+
+      {drill.id === 'drill-bank-webmail' && (
+        <AuthenticBankPortal drill={drill} token={token} onComplete={handleDrillComplete} />
+      )}
+
+      {drill.id === 'drill-cbe-birr' && (
+        <AuthenticCBEBirrPortal drill={drill} token={token} onComplete={handleDrillComplete} />
+      )}
+
+      {drill.id === 'drill-telebirr-fraud' && (
+        <TelebirrAppDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+      )}
+
+      {drill.id === 'drill-deepfake-audio' && (
+        <DeepfakeAudioDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+      )}
+
+      {drill.id === 'drill-m365-oauth' && (
+        <M365OAuthDrill drill={drill} token={token} onComplete={handleDrillComplete} />
+      )}
+
+      {/* Fallback for other drill types */}
+      {!['drill-iphone-giveaway', 'drill-bank-webmail', 'drill-cbe-birr', 'drill-telebirr-fraud', 'drill-deepfake-audio', 'drill-m365-oauth'].includes(
+        drill.id
+      ) && <AuthenticBankPortal drill={drill} token={token} onComplete={handleDrillComplete} />}
 
       {/* Breach Interception Modal (Simulates real-world impact before training) */}
       {showBreachModal && (

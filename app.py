@@ -531,9 +531,161 @@ def create_directadmin_mailbox(username, password=None, quota=500):
         return False, str(e)
 
 
-def format_phishing_email_html(subject, body, target_name, call_to_action, drill_url, token, sender_email, base_url):
+def format_phishing_email_html(subject, body, target_name, call_to_action, drill_url, token, sender_email, base_url, drill_id=None):
     formatted_body = body.replace('\n', '<br>')
     pixel_url = f"{base_url}/api/drills/track-pixel?token={token}"
+
+    if drill_id == 'drill-iphone-giveaway':
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0b0c; margin: 0; padding: 24px; color: #f5f5f7; }}
+  .container {{ max-width: 580px; margin: 0 auto; background: #161617; border-radius: 18px; border: 1px solid #333336; overflow: hidden; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4); }}
+  .header {{ background: #000000; color: #ffffff; padding: 22px 28px; border-bottom: 1px solid #272729; text-align: center; }}
+  .header-tag {{ font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #0071e3; font-weight: 700; }}
+  .header-title {{ font-size: 20px; font-weight: 700; margin: 6px 0 0 0; color: #ffffff; letter-spacing: -0.3px; }}
+  .content {{ padding: 32px 28px; font-size: 14px; line-height: 1.6; color: #d2d2d7; }}
+  .prize-card {{ background: #1d1d1f; border-radius: 14px; border: 1px solid #333336; padding: 20px; margin: 20px 0; }}
+  .cta-block {{ text-align: center; margin: 28px 0 10px 0; }}
+  .cta-btn {{ display: inline-block; background-color: #0071e3; color: #ffffff !important; padding: 14px 34px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 4px 18px rgba(0, 113, 227, 0.4); letter-spacing: 0.2px; }}
+  .footer {{ padding: 24px 28px; background: #111112; border-top: 1px solid #272729; font-size: 11px; color: #6e6e73; line-height: 1.6; text-align: center; }}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-tag">Apple Customer Loyalty & Distribution</div>
+      <div class="header-title">🎁 VIP Reward Allocation Confirmed</div>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; color: #ffffff; margin-top: 0;">Dear {target_name},</p>
+      <div style="margin: 16px 0; line-height: 1.6;">{formatted_body}</div>
+      <div class="prize-card">
+        <div style="font-weight: 700; font-size: 13px; color: #38bdf8; margin-bottom: 12px;">Allocated Hardware Voucher #APP-884920-VIP</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <tr>
+            <td style="color: #86868b; padding: 4px 0;">Device:</td>
+            <td style="color: #ffffff; font-weight: 600; text-align: right;">iPhone 17 Pro Max (1TB Titanium)</td>
+          </tr>
+          <tr>
+            <td style="color: #86868b; padding: 4px 0;">Retail Price:</td>
+            <td style="color: #ffffff; text-decoration: line-through; text-align: right;">$1,499.00 USD</td>
+          </tr>
+          <tr>
+            <td style="color: #34d399; font-weight: 600; padding: 4px 0;">VIP Loyalty Voucher:</td>
+            <td style="color: #34d399; font-weight: 600; text-align: right;">FREE (100% OFF)</td>
+          </tr>
+          <tr>
+            <td style="color: #86868b; padding: 4px 0;">Courier Delivery:</td>
+            <td style="color: #ffffff; text-align: right;">Priority Express (FREE)</td>
+          </tr>
+        </table>
+      </div>
+      <div class="cta-block">
+        <a href="{drill_url}" class="cta-btn">{call_to_action}</a>
+      </div>
+      <p style="font-size: 11px; color: #86868b; text-align: center; margin-top: 16px;">
+        * Priority reservation held for 12 hours. Unclaimed vouchers automatically transfer to runner-up.
+      </p>
+    </div>
+    <div class="footer">
+      Apple Inc., 1 Apple Park Way, Cupertino, CA 95014.<br>
+      Privacy Policy · Terms & Conditions · Device Distribution Program<br>
+      This message was delivered to your registered email regarding your customer loyalty allocation.
+    </div>
+  </div>
+  <img src="{pixel_url}" width="1" height="1" style="display:none;" alt="" />
+</body>
+</html>"""
+
+    if drill_id == 'drill-bank-webmail':
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #0f172a; }}
+  .container {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }}
+  .header {{ background: #0f172a; color: #ffffff; padding: 22px 28px; border-bottom: 3px solid #0284c7; }}
+  .header-tag {{ font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #38bdf8; font-weight: 700; }}
+  .header-title {{ font-size: 18px; font-weight: 700; margin: 6px 0 0 0; color: #ffffff; }}
+  .content {{ padding: 28px 28px; font-size: 14px; line-height: 1.6; color: #334155; }}
+  .alert-box {{ background: #fef2f2; border-left: 4px solid #ef4444; padding: 14px 18px; margin: 18px 0; border-radius: 6px; font-size: 13px; color: #991b1b; }}
+  .cta-block {{ text-align: center; margin: 26px 0; }}
+  .cta-btn {{ display: inline-block; background-color: #0284c7; color: #ffffff !important; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }}
+  .footer {{ padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; line-height: 1.6; }}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-tag">Menteko National Bank · Fraud Prevention Unit</div>
+      <div class="header-title">{subject}</div>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; color: #0f172a; margin-top: 0;">Dear {target_name},</p>
+      <div class="alert-box">
+        <b>Security Alert:</b> An unrecognized sign-in attempt was detected from Frankfurt, Germany (IP: 185.220.101.5).
+      </div>
+      <div style="margin: 16px 0; line-height: 1.6;">{formatted_body}</div>
+      <div class="cta-block">
+        <a href="{drill_url}" class="cta-btn">{call_to_action}</a>
+      </div>
+    </div>
+    <div class="footer">
+      Menteko National Bank & Financial Services Corp. Member FDIC. Equal Housing Lender.<br>
+      CONFIDENTIALITY NOTICE: This transmission is intended only for the designated account owner. If you received this in error, please disregard.
+    </div>
+  </div>
+  <img src="{pixel_url}" width="1" height="1" style="display:none;" alt="" />
+</body>
+</html>"""
+
+    if drill_id == 'drill-cbe-birr':
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f5f3ff; margin: 0; padding: 24px; color: #1e1b4b; }}
+  .container {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 14px; border: 1px solid #e9d5ff; overflow: hidden; box-shadow: 0 8px 24px rgba(107, 33, 168, 0.08); }}
+  .header {{ background: #4a0e4e; color: #ffffff; padding: 22px 28px; border-bottom: 3px solid #f59e0b; }}
+  .header-tag {{ font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #fbbf24; font-weight: 700; }}
+  .header-title {{ font-size: 18px; font-weight: 700; margin: 6px 0 0 0; color: #ffffff; }}
+  .content {{ padding: 28px 28px; font-size: 14px; line-height: 1.6; color: #374151; }}
+  .cta-block {{ text-align: center; margin: 26px 0; }}
+  .cta-btn {{ display: inline-block; background-color: #6b21a8; color: #ffffff !important; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(107, 33, 168, 0.3); }}
+  .footer {{ padding: 20px 28px; background: #faf5ff; border-top: 1px solid #f3e8ff; font-size: 11px; color: #7e22ce; line-height: 1.6; }}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-tag">የኢትዮጵያ ንግድ ባንክ · Commercial Bank of Ethiopia (CBE Birr)</div>
+      <div class="header-title">{subject}</div>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; color: #1e1b4b; margin-top: 0;">Dear {target_name},</p>
+      <div style="margin: 16px 0; line-height: 1.6;">{formatted_body}</div>
+      <div class="cta-block">
+        <a href="{drill_url}" class="cta-btn">{call_to_action}</a>
+      </div>
+    </div>
+    <div class="footer">
+      Commercial Bank of Ethiopia, P.O. Box 255, Churchill Road, Addis Ababa.<br>
+      CBE Birr Mobile Financial Services Division · Customer Helpline: 951
+    </div>
+  </div>
+  <img src="{pixel_url}" width="1" height="1" style="display:none;" alt="" />
+</body>
+</html>"""
+
+    # Generic / default enterprise template
     return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -541,8 +693,8 @@ def format_phishing_email_html(subject, body, target_name, call_to_action, drill
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #0f172a; }}
-  .container {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
-  .header {{ background: #0f172a; color: #ffffff; padding: 20px 24px; }}
+  .container {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }}
+  .header {{ background: #0f172a; color: #ffffff; padding: 20px 24px; border-bottom: 2px solid #0284c7; }}
   .header-tag {{ font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #38bdf8; font-weight: 700; }}
   .header-title {{ font-size: 18px; font-weight: 700; margin: 6px 0 0 0; color: #ffffff; }}
   .content {{ padding: 28px 24px; font-size: 14px; line-height: 1.6; color: #334155; }}
@@ -554,7 +706,7 @@ def format_phishing_email_html(subject, body, target_name, call_to_action, drill
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-tag">Official Security Notice</div>
+      <div class="header-tag">Secure Notification Center</div>
       <div class="header-title">{subject}</div>
     </div>
     <div class="content">
@@ -565,7 +717,8 @@ def format_phishing_email_html(subject, body, target_name, call_to_action, drill
       </div>
     </div>
     <div class="footer">
-      🔒 <b>MENTEKO Defense Engine:</b> Controlled resilience training authorized by your organization. DirectAdmin Verified Dispatch ({sender_email}).
+      Official Notification System · Automated Service Dispatch ({sender_email}).<br>
+      Please do not reply directly to this automated email.
     </div>
   </div>
   <img src="{pixel_url}" width="1" height="1" style="display:none;" alt="" />
@@ -900,38 +1053,25 @@ def launch_drill():
     email_sent = False
     if email and drill.get('serverEmailSupport'):
         tmpl = drill.get('emailTemplate', {})
-        html_email = f"""
-        <!DOCTYPE html>
-        <html>
-        <head><meta charset="utf-8">
-        <style>
-          body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f6f8; margin: 0; padding: 24px; color: #1a202c; }}
-          .card {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
-          .btn {{ display: inline-block; background-color: #1a73e8; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 16px 0; }}
-          .disclaimer {{ margin-top: 24px; padding-top: 16px; border-top: 1px solid #edf2f7; font-size: 11px; color: #718096; }}
-        </style>
-        </head>
-        <body>
-          <div class="card">
-            <h3 style="margin-top: 0; color: #2d3748;">{tmpl.get('subject', 'Security Notice')}</h3>
-            <p style="white-space: pre-line; line-height: 1.6;">{tmpl.get('body', '')}</p>
-            <p style="text-align: center;">
-              <a href="{drill_url}" class="btn">{tmpl.get('callToAction', 'Review Notification')}</a>
-            </p>
-            <div class="disclaimer">
-              🔒 <b>MENTEKO Authorized Cyber Simulation:</b> This controlled exercise tests human resilience. No actual passwords or credentials are ever collected or stored.
-            </div>
-          </div>
-        </body>
-        </html>
-        """
+        html_email = format_phishing_email_html(
+            subject=tmpl.get('subject', 'Security Notice'),
+            body=tmpl.get('body', ''),
+            target_name=target_name,
+            call_to_action=tmpl.get('callToAction', 'Review Notification'),
+            drill_url=drill_url,
+            token=token,
+            sender_email=f"security-alerts@{DA_DOMAIN}",
+            base_url=base_url,
+            drill_id=drill_id
+        )
         try:
             send_smtp_email(
                 to_email=email,
-                subject=tmpl.get('subject', 'Security Drill'),
+                subject=tmpl.get('subject', 'Security Notice'),
                 html_content=html_email,
-                text_content=f"{tmpl.get('body', '')}\\n\\nDrill Link: {drill_url}",
-                from_name=tmpl.get('fromName', 'Menteko Cyber Defense')
+                text_content=f"{tmpl.get('body', '')}\n\nDrill Link: {drill_url}",
+                from_name=tmpl.get('fromName') or drill.get('title', 'Cyber Defense Team'),
+                from_email=f"security-alerts@{DA_DOMAIN}"
             )
             email_sent = True
         except Exception as e:
@@ -1300,7 +1440,8 @@ def admin_launch_drills():
                 drill_url=drill_url,
                 token=token,
                 sender_email=sender_email,
-                base_url=base_url
+                base_url=base_url,
+                drill_id=drill_id
             )
             try:
                 send_smtp_email(
@@ -1413,7 +1554,8 @@ def admin_resend_drill(drill_id):
         drill_url=drill_url,
         token=drill_record['token'],
         sender_email=sender_email,
-        base_url=base_url
+        base_url=base_url,
+        drill_id=drill.get('id')
     )
 
     try:

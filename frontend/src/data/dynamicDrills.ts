@@ -9,7 +9,7 @@ export interface DynamicDrill {
   title: string;
   category: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
-  format: 'DYNAMIC_WEBMAIL' | 'DYNAMIC_SMARTPHONE' | 'DYNAMIC_WALLET' | 'DYNAMIC_AUDIO' | 'DYNAMIC_OAUTH';
+  format: 'DYNAMIC_WEBMAIL' | 'DYNAMIC_SMARTPHONE' | 'DYNAMIC_WALLET' | 'DYNAMIC_AUDIO' | 'DYNAMIC_OAUTH' | 'DYNAMIC_REWARDS';
   subtitle: string;
   estimatedMinutes: number;
   description: string;
@@ -314,6 +314,63 @@ Menteko Enterprise Secure Collaboration`,
         title: 'Password-Less Persistent Compromise',
         description:
           'Illicit consent bypasses MFA and password resets because the attacker holds a valid OAuth refresh token granted directly by the user.',
+      },
+    ],
+  },
+  {
+    id: 'drill-iphone-giveaway',
+    title: 'VIP Loyalty Prize: You Won an iPhone 17 Pro Max',
+    category: 'rewards-phishing',
+    difficulty: 'beginner',
+    format: 'DYNAMIC_REWARDS',
+    subtitle: 'Apple VIP Customer Appreciation Giveaway & Credential Harvester',
+    estimatedMinutes: 3,
+    description:
+      'An alluring consumer phishing attack claiming your email won a brand new Apple iPhone 17 Pro Max Titanium. Tests whether employees are susceptible to greed-driven social engineering lures.',
+    serverEmailSupport: true,
+    emailTemplate: {
+      fromName: 'Apple Customer Loyalty Rewards',
+      fromEmail: 'noreply@savethegeneration.com.et',
+      subject: '🎁 Urgent Notice: Claim your complimentary iPhone 17 Pro Max (VIP Reward Allocation)',
+      body: `Dear Valued Customer / Team Member,
+
+Congratulations! Your registered email address was selected as the Grand Prize Winner in the 2026 VIP Customer Loyalty Appreciation Giveaway!
+
+Your Allocated Prize:
+• Device: Apple iPhone 17 Pro Max (1TB Titanium Edition)
+• Retail Value: $1,499.00 USD / 185,000 ETB
+• Status: Ready for priority courier delivery
+
+Due to high demand and strict compliance quotas, your device reservation is held for 12 hours only. To confirm your shipping address and authenticate device ownership, please complete your claim voucher using the link below:
+
+If unclaimed within 12 hours, this allocation will automatically transfer to the next runner-up.
+
+Apple Customer Loyalty & Global Distribution Team`,
+      callToAction: 'Claim Your iPhone 17 Pro Max Now',
+    },
+    indicators: [
+      {
+        id: 'ind-gift-1',
+        title: 'Too Good to Be True / Greed Exploitation',
+        description:
+          'Legitimate technology corporations never give away $1,500 flagship hardware unprompted via cold email.',
+      },
+      {
+        id: 'ind-gift-2',
+        title: 'Artificial Urgency & Countdown Timer',
+        description:
+          'A 12-hour expiration window is specifically designed to provoke impulsive fear of missing out (FOMO) and bypass rational scrutiny.',
+      },
+      {
+        id: 'ind-gift-3',
+        title: "Credential Harvesting Under Guise of 'Ownership Verification'",
+        description:
+          'Legitimate shipping procedures never require entering your Apple ID / corporate email password to verify shipping details.',
+      },
+      {
+        id: 'ind-gift-4',
+        title: 'Lookalike Domain & Unverified Origin',
+        description: 'The destination site mimics official Apple styling but resides on a third-party server.',
       },
     ],
   },
