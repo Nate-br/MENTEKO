@@ -71,7 +71,7 @@ export function AdminPortal() {
   const [targetName, setTargetName] = useState('');
   const [targetEmail, setTargetEmail] = useState('');
   const [targetDept, setTargetDept] = useState('Finance');
-  const [sendRealEmail, setSendRealEmail] = useState(true);
+  const sendRealEmail = true;
   const [bulkTargets, setBulkTargets] = useState('');
   const [bulkMode, setBulkMode] = useState(false);
   const [launching, setLaunching] = useState(false);
@@ -219,6 +219,18 @@ export function AdminPortal() {
     }
   };
 
+  const handleResendEmail = async (id: string, email: string) => {
+    try {
+      const res = await api.post<any>(`/admin/drills/${id}/resend`);
+      if (res.success) {
+        alert(res.message || `Simulation email re-delivered to ${email}!`);
+        fetchAdminData();
+      }
+    } catch (err: any) {
+      alert(err?.message || 'Failed to resend simulation email.');
+    }
+  };
+
   const filteredDrills = drills.filter((d) => {
     const matchesStatus = statusFilter === 'all' || d.status === statusFilter;
     const searchLower = searchQuery.toLowerCase();
@@ -284,7 +296,7 @@ export function AdminPortal() {
       <div className="mt-8 flex flex-wrap gap-2 border-b border-line pb-3">
         {[
           { id: 'analytics', label: 'Overview & Metrics' },
-          { id: 'launcher', label: 'Send Demo Link / Launch Campaign' },
+          { id: 'launcher', label: 'Send Phishing Emails to Employees' },
           { id: 'monitor', label: `Employee Live Tracker (${drills.length})` },
           { id: 'emails', label: `DirectAdmin Mailboxes (${directAdminEmails.length})` },
         ].map((t) => (
@@ -399,22 +411,24 @@ export function AdminPortal() {
         </div>
       )}
 
-      {/* TAB 2: LAUNCH DRILL & GENERATE DEMO LINK */}
+      {/* TAB 2: DISPATCH PHISHING DRILLS VIA DIRECTADMIN SMTP */}
       {activeTab === 'launcher' && (
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 animate-in fade-in duration-200">
           {/* Form */}
           <div className="rounded-2xl border border-line bg-panel-1 p-6 shadow-xl lg:col-span-7 space-y-6">
             <div>
-              <h2 className="text-xl font-bold text-text">Send Drill / Generate Employee Demo Link</h2>
-              <p className="text-xs text-muted mt-1">
-                Dispatch an authorized awareness exercise directly to an employee's inbox using your DirectAdmin emails.
+              <h2 className="text-xl font-bold text-text">Dispatch Phishing Simulation to Employee Inboxes</h2>
+              <p className="text-xs text-muted mt-1 leading-relaxed">
+                Send authentic phishing exercises directly to employee emails using verified DirectAdmin accounts
+                (<span className="text-cyan font-mono">@savethegeneration.com.et</span>). When the employee opens their email
+                and interacts, live telemetry tracks their reaction time and redirects them to the defense training.
               </p>
             </div>
 
             <form onSubmit={handleLaunchCampaign} className="space-y-4">
               {/* Drill Scenario Template */}
               <div>
-                <label className="block text-xs font-mono uppercase text-muted mb-1.5">Simulation Template</label>
+                <label className="block text-xs font-mono uppercase text-muted mb-1.5">Simulation Attack Template</label>
                 <select
                   value={selectedDrillId}
                   onChange={(e) => setSelectedDrillId(e.target.value)}
@@ -431,7 +445,7 @@ export function AdminPortal() {
               {/* DirectAdmin Sender Selection */}
               <div>
                 <label className="block text-xs font-mono uppercase text-muted mb-1.5">
-                  DirectAdmin Sender Account (savethegeneration.com.et)
+                  DirectAdmin Sender Mailbox (savethegeneration.com.et)
                 </label>
                 <select
                   value={selectedSenderEmail}
@@ -451,7 +465,7 @@ export function AdminPortal() {
                 <button
                   type="button"
                   onClick={() => setBulkMode(false)}
-                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg border ${
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
                     !bulkMode ? 'bg-cyan/20 border-cyan text-cyan' : 'border-line text-muted'
                   }`}
                 >
@@ -460,11 +474,11 @@ export function AdminPortal() {
                 <button
                   type="button"
                   onClick={() => setBulkMode(true)}
-                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg border ${
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
                     bulkMode ? 'bg-cyan/20 border-cyan text-cyan' : 'border-line text-muted'
                   }`}
                 >
-                  Bulk Employee List (CSV)
+                  Bulk Employee Roster (CSV)
                 </button>
               </div>
 
@@ -481,9 +495,12 @@ export function AdminPortal() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono uppercase text-muted mb-1">Work Email</label>
+                    <label className="block text-xs font-mono uppercase text-muted mb-1">
+                      Employee Work Email <span className="text-red-400">*</span>
+                    </label>
                     <input
                       type="email"
+                      required
                       placeholder="abebe@company.com"
                       value={targetEmail}
                       onChange={(e) => setTargetEmail(e.target.value)}
@@ -504,7 +521,7 @@ export function AdminPortal() {
               ) : (
                 <div>
                   <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Paste Roster (Format: Name, Email, Department)
+                    Paste Employee Roster (Format: Name, Email, Department)
                   </label>
                   <textarea
                     rows={4}
@@ -516,25 +533,31 @@ export function AdminPortal() {
                 </div>
               )}
 
-              {/* Delivery method checkboxes */}
-              <div className="rounded-xl border border-line bg-panel-2 p-3.5 space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-200">
-                  <input
-                    type="checkbox"
-                    checked={sendRealEmail}
-                    onChange={(e) => setSendRealEmail(e.target.checked)}
-                    className="rounded border-line text-cyan focus:ring-0"
-                  />
-                  <span>
-                    <b>Deliver Real Email:</b> Send authentic phishing email via DirectAdmin MTA to employee inbox
-                  </span>
-                </label>
+              {/* Delivery method notice */}
+              <div className="rounded-xl border border-cyan/30 bg-cyan/5 p-3.5 space-y-1">
+                <div className="flex items-center gap-2 text-xs text-cyan font-bold">
+                  <Mail size={14} />
+                  <span>DirectAdmin SMTP Delivery Guaranteed</span>
+                </div>
+                <p className="text-[11px] text-muted leading-relaxed">
+                  The simulation email will be delivered directly to the employee's inbox via authenticated DirectAdmin Exim MTA from{' '}
+                  <span className="text-slate-200 font-mono">{selectedSenderEmail}</span>. The email contains a tracked drill link that logs their response.
+                </p>
               </div>
 
               {launchSuccessMsg && (
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3 text-xs text-emerald-300 flex items-center gap-2">
-                  <CheckCircle2 size={16} />
-                  <span>{launchSuccessMsg}</span>
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-xs text-emerald-300 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                    <span>{launchSuccessMsg}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('monitor')}
+                    className="text-xs font-bold text-cyan hover:underline shrink-0"
+                  >
+                    View Live Tracker →
+                  </button>
                 </div>
               )}
 
@@ -542,69 +565,87 @@ export function AdminPortal() {
                 type="submit"
                 variant="primary"
                 disabled={launching}
-                className="w-full text-xs font-bold py-2.5 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan to-blue-600 hover:from-cyan/90 hover:to-blue-500 text-bg"
+                className="w-full text-xs font-bold py-3 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan to-blue-600 hover:from-cyan/90 hover:to-blue-500 text-bg shadow-lg"
               >
                 {launching ? (
-                  'Dispatching Drills...'
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Delivering Email via DirectAdmin MTA...
+                  </>
                 ) : (
                   <>
-                    <Send size={14} /> Dispatch Campaign & Generate Demo Links
+                    <Send size={14} /> Send Phishing Simulation Email Now
                   </>
                 )}
               </Button>
             </form>
           </div>
 
-          {/* Generated Links Panel */}
+          {/* Recent Dispatches & Delivery Audit Panel */}
           <div className="rounded-2xl border border-line bg-panel-1 p-6 lg:col-span-5 space-y-4">
-            <h3 className="text-base font-bold text-text flex items-center gap-2">
-              <ExternalLink size={16} className="text-cyan" />
-              Generated Demo Links
-            </h3>
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="text-base font-bold text-text flex items-center gap-2">
+                <Mail size={16} className="text-cyan" />
+                Recent Email Dispatches
+              </h3>
+              <span className="text-[10px] font-mono text-muted">DirectAdmin Exim</span>
+            </div>
             <p className="text-xs text-muted">
-              You can copy these links directly to send via Slack, Microsoft Teams, WhatsApp, or test them in your own
-              browser.
+              Live audit of simulation emails sent to employees. Monitor real-time opens, clicks, credential compromises, and defense training.
             </p>
 
             {launchResults.length > 0 ? (
-              <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
                 {launchResults.map((r, i) => (
                   <div key={i} className="rounded-xl border border-line bg-panel-2 p-3 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-text">{r.name}</span>
                       <span className="font-mono text-[10px] text-muted">{r.department}</span>
                     </div>
-                    {r.email && <p className="text-[11px] text-muted">{r.email}</p>}
-                    <div className="flex items-center gap-2 pt-1">
-                      <input
-                        type="text"
-                        readOnly
-                        value={r.drillUrl}
-                        className="w-full rounded border border-line bg-black/40 px-2 py-1 font-mono text-[10px] text-cyan truncate"
-                      />
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleCopyLink(r.drillUrl, r.token)}
-                        className="text-[11px] px-2.5 shrink-0"
+                    {r.email && (
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-300 font-mono">{r.email}</span>
+                        {r.emailSent ? (
+                          <span className="rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 text-[9px] font-bold">
+                            ✅ Delivered to Inbox
+                          </span>
+                        ) : (
+                          <span className="rounded bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 text-[9px] font-bold">
+                            ⚠️ Delivery Error
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between pt-1 border-t border-line/60">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery(r.email || r.name);
+                          setActiveTab('monitor');
+                        }}
+                        className="text-[11px] font-semibold text-cyan hover:underline flex items-center gap-1"
                       >
-                        {copiedToken === r.token ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                      </Button>
+                        <Clock size={11} /> Track Employee Reaction
+                      </button>
                       <a
                         href={r.drillUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded bg-cyan/10 border border-cyan/30 p-1.5 text-cyan hover:bg-cyan/20 shrink-0"
+                        className="rounded bg-cyan/10 border border-cyan/30 px-2 py-1 text-[11px] text-cyan hover:bg-cyan/20 flex items-center gap-1"
+                        title="Preview landing page that employee sees"
                       >
-                        <ExternalLink size={13} />
+                        <ExternalLink size={11} /> Preview Page
                       </a>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-line bg-panel-2 p-8 text-center text-xs text-muted">
-                No active links generated in this session yet. Launch a drill to produce tracked demo links.
+              <div className="rounded-xl border border-line bg-panel-2 p-8 text-center text-xs text-muted space-y-2">
+                <Mail size={24} className="mx-auto text-muted/50" />
+                <p>No emails dispatched in this session yet.</p>
+                <p className="text-[11px] text-muted/80">
+                  Select a template, enter an employee email, and click <b>Send Phishing Simulation Email Now</b> to start.
+                </p>
               </div>
             )}
           </div>
@@ -724,6 +765,17 @@ export function AdminPortal() {
                           </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              {drill.target_email && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleResendEmail(drill.id, drill.target_email || 'employee')}
+                                  className="h-7 w-7 p-0 text-muted hover:text-emerald-400"
+                                  title="Resend Phishing Simulation Email via DirectAdmin SMTP"
+                                >
+                                  <Mail size={12} />
+                                </Button>
+                              )}
                               <Button
                                 size="sm"
                                 variant="ghost"

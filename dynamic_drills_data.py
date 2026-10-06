@@ -49,7 +49,14 @@ DYNAMIC_DRILLS = [
         "subtitle": "Interactive Smartphone Screen & Helpline 951 Dialing",
         "estimatedMinutes": 4,
         "description": "Interact with a simulated smartphone receiving an urgent CBE Birr KYC lockout alert. Inspect the incoming shortcode, test the fake KYC form, and dial the official 951 helpline simulator.",
-        "serverEmailSupport": False,
+        "serverEmailSupport": True,
+        "emailTemplate": {
+            "fromName": "CBE Birr Security Support",
+            "fromEmail": "security-alerts@savethegeneration.com.et",
+            "subject": "Urgent Alert: Your CBE Birr Mobile Account is Temporarily Suspended",
+            "body": "Dear CBE Customer,\n\nOur system detected an incomplete KYC verification status on your CBE Birr mobile banking account.\n\nTo prevent immediate restriction of incoming and outgoing fund transfers, please verify your customer identity profile immediately using the link below.\n\nFailure to verify within 2 hours will result in automatic service termination.\n\nCommercial Bank of Ethiopia Security Operations",
+            "callToAction": "Verify CBE Birr Profile Now"
+        },
         "smsContent": {
             "senderDisplay": "CBE-Birr",
             "senderRaw": "+251911448821",
@@ -84,7 +91,14 @@ DYNAMIC_DRILLS = [
         "subtitle": "Interactive Wallet UI & Official Ledger Verification",
         "estimatedMinutes": 3,
         "description": "A stranger sends a fake SMS screenshot claiming they mistakenly transferred 500 ETB to your phone and urgently needs a refund for hospital bills. Verify the live transaction ledger before deciding.",
-        "serverEmailSupport": False,
+        "serverEmailSupport": True,
+        "emailTemplate": {
+            "fromName": "Telebirr Dispute Center",
+            "fromEmail": "drills@savethegeneration.com.et",
+            "subject": "Dispute Notice: Erroneous Transfer Claim Ref #ETB-89104",
+            "body": "Dear Telebirr Customer,\n\nA payment dispute has been filed regarding a recent mobile transfer of 500.00 ETB to your account. The sender claims this transaction was sent in error and has requested an immediate reversal.\n\nPlease inspect your active account ledger and review the claim details below:\n\nTelebirr Customer Protection Department",
+            "callToAction": "Review Disputed Transaction Ledger"
+        },
         "walletInitialBalance": 4850.00,
         "fraudClaimAmount": 500.00,
         "claimSender": "0922-441199",
@@ -115,7 +129,14 @@ DYNAMIC_DRILLS = [
         "subtitle": "Live Audio Waveform Analyzer & Out-of-Band Verification",
         "estimatedMinutes": 5,
         "description": "Listen to an urgent voice memo purportedly sent by your CEO requesting an immediate emergency wire transfer to an offshore supplier. Use forensic audio analysis tools to uncover synthetic artifacts.",
-        "serverEmailSupport": False,
+        "serverEmailSupport": True,
+        "emailTemplate": {
+            "fromName": "Office of the Managing Director",
+            "fromEmail": "admin@savethegeneration.com.et",
+            "subject": "Urgent Directive: Confidential Voice Authorization Memo",
+            "body": "Dear Finance Operations Team,\n\nDr. Dawit has forwarded an urgent audio directive regarding an emergency offshore supplier disbursement (150,000 ETB) required before his flight departs.\n\nPlease listen to the voice memo immediately and verify payment instructions:\n\nOffice of the Managing Director",
+            "callToAction": "Listen to Executive Audio Memo"
+        },
         "memoDuration": "0:24",
         "executiveName": "Dr. Dawit (Managing Director)",
         "wireAmount": "150,000 ETB ($1,250 USD)",

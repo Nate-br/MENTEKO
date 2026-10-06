@@ -17,8 +17,13 @@ from dynamic_drills_data import DYNAMIC_DRILLS
 COMBINED_SCENARIOS = ALL_SCENARIOS
 
 SMTP_HOST = os.environ.get('SMTP_HOST', '127.0.0.1')
-SMTP_PORT = int(os.environ.get('SMTP_PORT', 25))
-DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL', 'noreply@savethegeneration.com.et')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL', 'security-alerts@savethegeneration.com.et')
+
+DA_HOST = os.environ.get('DA_HOST', 'https://127.0.0.1:2222')
+DA_USER = os.environ.get('DA_USER', 'eescprut')
+DA_PASS = os.environ.get('DA_PASS', 'G0dworksforme@2026.')
+DA_DOMAIN = os.environ.get('DA_DOMAIN', 'savethegeneration.com.et')
 
 app = Flask(__name__)
 
@@ -496,7 +501,7 @@ def get_directadmin_mailboxes():
         f"noreply@{DA_DOMAIN}"
     ]
 
-def create_directadmin_mailbox(username, password, quota=500):
+def create_directadmin_mailbox(username, password=None, quota=500):
     try:
         import urllib.request, ssl, base64, urllib.parse
         ctx = ssl.create_default_context()
@@ -504,14 +509,15 @@ def create_directadmin_mailbox(username, password, quota=500):
         ctx.verify_mode = ssl.CERT_NONE
 
         clean_user = username.split('@')[0].strip().lower()
+        clean_pass = password or DA_PASS
         auth = base64.b64encode(f"{DA_USER}:{DA_PASS}".encode()).decode("ascii")
         url = f"{DA_HOST}/CMD_API_POP"
         data = urllib.parse.urlencode({
             "action": "create",
             "domain": DA_DOMAIN,
             "user": clean_user,
-            "passwd": password,
-            "passwd2": password,
+            "passwd": clean_pass,
+            "passwd2": clean_pass,
             "quota": quota
         }).encode("utf-8")
 
@@ -525,8 +531,53 @@ def create_directadmin_mailbox(username, password, quota=500):
         return False, str(e)
 
 
+def format_phishing_email_html(subject, body, target_name, call_to_action, drill_url, token, sender_email, base_url):
+    formatted_body = body.replace('\n', '<br>')
+    pixel_url = f"{base_url}/api/drills/track-pixel?token={token}"
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #0f172a; }}
+  .container {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
+  .header {{ background: #0f172a; color: #ffffff; padding: 20px 24px; }}
+  .header-tag {{ font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #38bdf8; font-weight: 700; }}
+  .header-title {{ font-size: 18px; font-weight: 700; margin: 6px 0 0 0; color: #ffffff; }}
+  .content {{ padding: 28px 24px; font-size: 14px; line-height: 1.6; color: #334155; }}
+  .cta-block {{ text-align: center; margin: 26px 0; }}
+  .cta-btn {{ display: inline-block; background-color: #0284c7; color: #ffffff !important; padding: 13px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25); }}
+  .footer {{ padding: 18px 24px; background: #f8fafc; border-top: 1px solid #f1f5f9; font-size: 11px; color: #64748b; line-height: 1.5; }}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-tag">Official Security Notice</div>
+      <div class="header-title">{subject}</div>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; color: #0f172a; margin-top: 0;">Dear {target_name},</p>
+      <div style="margin: 16px 0; line-height: 1.6;">{formatted_body}</div>
+      <div class="cta-block">
+        <a href="{drill_url}" class="cta-btn">{call_to_action}</a>
+      </div>
+    </div>
+    <div class="footer">
+      🔒 <b>MENTEKO Defense Engine:</b> Controlled resilience training authorized by your organization. DirectAdmin Verified Dispatch ({sender_email}).
+    </div>
+  </div>
+  <img src="{pixel_url}" width="1" height="1" style="display:none;" alt="" />
+</body>
+</html>"""
+
+
 def send_smtp_email(to_email, subject, html_content, text_content=None, from_name="MENTEKO Cyber Resilience", from_email=None):
-    sender = from_email or DEFAULT_FROM_EMAIL
+    sender = (from_email or DEFAULT_FROM_EMAIL).strip()
+    if '@' not in sender:
+        sender = f"{sender}@{DA_DOMAIN}"
+
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = f"{from_name} <{sender}>"
@@ -540,28 +591,71 @@ def send_smtp_email(to_email, subject, html_content, text_content=None, from_nam
 
     msg.attach(MIMEText(html_content, 'html', 'utf-8'))
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=12) as server:
-        server.sendmail(sender, [to_email], msg.as_string())
-    return True
+    # Connect via port 587 with STARTTLS and DirectAdmin SMTP authentication
+    delivery_err = None
+    try:
+        with smtplib.SMTP(SMTP_HOST, 587, timeout=12) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            try:
+                server.login(sender, DA_PASS)
+            except Exception:
+                server.login(f"security-alerts@{DA_DOMAIN}", DA_PASS)
+            rejected = server.sendmail(sender, [to_email], msg.as_string())
+            if rejected:
+                raise Exception(f"Recipient rejected: {rejected}")
+            return True
+    except Exception as e587:
+        delivery_err = e587
+        app.logger.warning(f"SMTP delivery on 587 failed: {e587}. Trying port 465 SSL...")
+
+    # Fallback to port 465 SSL
+    try:
+        with smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=10) as server:
+            try:
+                server.login(sender, DA_PASS)
+            except Exception:
+                server.login(f"security-alerts@{DA_DOMAIN}", DA_PASS)
+            rejected = server.sendmail(sender, [to_email], msg.as_string())
+            if rejected:
+                raise Exception(f"Recipient rejected on port 465: {rejected}")
+            return True
+    except Exception as e465:
+        app.logger.warning(f"SMTP delivery on 465 failed: {e465}. Trying port 25...")
+
+    # Fallback to port 25
+    try:
+        with smtplib.SMTP(SMTP_HOST, 25, timeout=8) as server:
+            rejected = server.sendmail(sender, [to_email], msg.as_string())
+            if rejected:
+                raise Exception(f"Recipient rejected on port 25: {rejected}")
+            return True
+    except Exception as e25:
+        app.logger.error(f"All SMTP delivery methods failed for {to_email}: {delivery_err or e465 or e25}")
+        raise Exception(f"DirectAdmin SMTP Delivery Failed: {delivery_err or e465 or e25}")
 
 
 @app.route('/api/email/status', methods=['GET'])
 def email_status():
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=4) as server:
-            server.noop()
+        with smtplib.SMTP(SMTP_HOST, 587, timeout=4) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(f"security-alerts@{DA_DOMAIN}", DA_PASS)
             return jsonify({
                 "success": True,
                 "status": "connected",
-                "smtp_host": f"{SMTP_HOST}:{SMTP_PORT}",
-                "from_email": DEFAULT_FROM_EMAIL
+                "smtp_host": f"{SMTP_HOST}:587 (Authenticated DirectAdmin MTA)",
+                "from_email": f"security-alerts@{DA_DOMAIN}"
             })
     except Exception as e:
         return jsonify({
             "success": False,
             "status": "unavailable",
             "error": str(e),
-            "smtp_host": f"{SMTP_HOST}:{SMTP_PORT}"
+            "smtp_host": f"{SMTP_HOST}:587"
         }), 503
 
 
@@ -1158,8 +1252,8 @@ def admin_get_stats():
 def admin_launch_drills():
     data = request.get_json(silent=True) or {}
     drill_id = data.get('drillId') or 'drill-bank-webmail'
-    sender_email = data.get('senderEmail') or 'security-alerts@savethegeneration.com.et'
-    send_email = bool(data.get('sendEmail', False))
+    sender_email = data.get('senderEmail') or f"security-alerts@{DA_DOMAIN}"
+    send_email = bool(data.get('sendEmail', True))
     targets = data.get('targets', [])
 
     if not targets:
@@ -1188,52 +1282,39 @@ def admin_launch_drills():
             INSERT INTO drills
             (id, token, drill_id, target_email, target_name, sender_email, department, status, reaction_time_seconds, device_info, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (str(uuid.uuid4()), token, drill_id, target_email or None, target_name, sender_email, dept, 'dispatched', None, 'Admin Console', now))
+        ''', (str(uuid.uuid4()), token, drill_id, target_email or None, target_name, sender_email, dept, 'dispatched', None, 'DirectAdmin MTA', now))
 
         email_dispatched = False
-        if send_email and target_email:
+        email_err = None
+        if target_email:
             tmpl = drill.get('emailTemplate') or {
                 "subject": f"Action Required: {drill.get('title')}",
-                "body": f"Dear {target_name},\\n\\nPlease complete the authorized security verification drill using the link below:\\n\\n",
+                "body": f"Dear {target_name},\n\nPlease complete the authorized security verification drill using the link below:\n\n",
                 "callToAction": "Verify Credentials"
             }
-            html_email = f"""
-            <!DOCTYPE html>
-            <html>
-            <head><meta charset="utf-8">
-            <style>
-              body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f6f8; margin: 0; padding: 24px; color: #1a202c; }}
-              .card {{ max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
-              .btn {{ display: inline-block; background-color: #1a73e8; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 16px 0; }}
-              .disclaimer {{ margin-top: 24px; padding-top: 16px; border-top: 1px solid #edf2f7; font-size: 11px; color: #718096; }}
-            </style>
-            </head>
-            <body>
-              <div class="card">
-                <h3 style="margin-top: 0; color: #2d3748;">{tmpl.get('subject', 'Security Notice')}</h3>
-                <p style="white-space: pre-line; line-height: 1.6;">{tmpl.get('body', '')}</p>
-                <p style="text-align: center;">
-                  <a href="{drill_url}" class="btn">{tmpl.get('callToAction', 'Review Notification')}</a>
-                </p>
-                <div class="disclaimer">
-                  🔒 <b>MENTEKO Authorized Cyber Simulation:</b> Controlled resilience training. DirectAdmin Verified Dispatch ({sender_email}).
-                </div>
-              </div>
-            </body>
-            </html>
-            """
+            html_email = format_phishing_email_html(
+                subject=tmpl.get('subject', 'Security Notice'),
+                body=tmpl.get('body', ''),
+                target_name=target_name,
+                call_to_action=tmpl.get('callToAction', 'Review Notification'),
+                drill_url=drill_url,
+                token=token,
+                sender_email=sender_email,
+                base_url=base_url
+            )
             try:
                 send_smtp_email(
                     to_email=target_email,
                     subject=tmpl.get('subject', 'Security Notice'),
                     html_content=html_email,
-                    text_content=f"{tmpl.get('body', '')}\\n\\nDrill Link: {drill_url}",
-                    from_name=drill.get('title', 'Cyber Defense Team'),
+                    text_content=f"{tmpl.get('body', '')}\n\nDrill Link: {drill_url}",
+                    from_name=tmpl.get('fromName') or drill.get('title', 'Cyber Defense Team'),
                     from_email=sender_email
                 )
                 email_dispatched = True
             except Exception as e:
-                app.logger.warning(f"Admin drill email delivery error: {e}")
+                email_err = str(e)
+                app.logger.error(f"Admin drill email delivery error to {target_email}: {e}")
 
         results.append({
             "token": token,
@@ -1241,17 +1322,116 @@ def admin_launch_drills():
             "name": target_name,
             "email": target_email,
             "department": dept,
-            "emailSent": email_dispatched
+            "senderEmail": sender_email,
+            "emailSent": email_dispatched,
+            "emailError": email_err
         })
 
     conn.commit()
     conn.close()
 
+    total_sent = sum(1 for r in results if r['emailSent'])
     return jsonify({
         "success": True,
-        "message": f"Successfully launched {len(results)} drill sessions",
+        "message": f"Successfully dispatched {total_sent} of {len(results)} phishing simulation email(s) via DirectAdmin MTA",
         "results": results
     })
+
+
+@app.route('/api/drills/track-pixel', methods=['GET'])
+def drill_track_pixel():
+    token = request.args.get('token')
+    if token:
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute('SELECT status, created_at, opened_at FROM drills WHERE token = ?', (token,))
+            row = cursor.fetchone()
+            if row and row['status'] == 'dispatched':
+                now_dt = datetime.now(timezone.utc)
+                now = now_dt.isoformat()
+                rx = None
+                try:
+                    c_time = datetime.fromisoformat(row['created_at'].replace('Z', '+00:00'))
+                    rx = max(1, int((now_dt - c_time).total_seconds()))
+                except Exception:
+                    rx = 12
+                cursor.execute('''
+                    UPDATE drills
+                    SET status = 'opened', opened_at = ?, reaction_time_seconds = COALESCE(reaction_time_seconds, ?)
+                    WHERE token = ?
+                ''', (now, rx, token))
+                conn.commit()
+            conn.close()
+        except Exception as e:
+            app.logger.warning(f"Track pixel telemetry error: {e}")
+
+    pixel_gif = (
+        b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff'
+        b'\x00\x00\x00\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00'
+        b'\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b'
+    )
+    res = make_response(pixel_gif)
+    res.headers['Content-Type'] = 'image/gif'
+    res.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    res.headers['Pragma'] = 'no-cache'
+    return res
+
+
+@app.route('/api/admin/drills/<drill_id>/resend', methods=['POST'])
+def admin_resend_drill(drill_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM drills WHERE id = ? OR token = ?', (drill_id, drill_id))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"success": False, "message": "Drill record not found"}), 404
+
+    drill_record = dict(row)
+    target_email = drill_record.get('target_email')
+    if not target_email:
+        conn.close()
+        return jsonify({"success": False, "message": "Drill record has no target email"}), 400
+
+    drill = next((d for d in DYNAMIC_DRILLS if d['id'] == drill_record.get('drill_id')), None) or DYNAMIC_DRILLS[0]
+    sender_email = drill_record.get('sender_email') or f"security-alerts@{DA_DOMAIN}"
+    base_url = os.environ.get('BASE_URL', 'https://menteko.savethegeneration.com.et')
+    drill_url = f"{base_url}/drill?token={drill_record['token']}&drill={drill['id']}"
+
+    tmpl = drill.get('emailTemplate') or {
+        "subject": f"Action Required: {drill.get('title')}",
+        "body": f"Dear {drill_record.get('target_name', 'Team Member')},\n\nPlease review the urgent notification below:\n\n",
+        "callToAction": "Review Notification"
+    }
+
+    html_email = format_phishing_email_html(
+        subject=tmpl.get('subject', 'Security Notice'),
+        body=tmpl.get('body', ''),
+        target_name=drill_record.get('target_name', 'Team Member'),
+        call_to_action=tmpl.get('callToAction', 'Review Notification'),
+        drill_url=drill_url,
+        token=drill_record['token'],
+        sender_email=sender_email,
+        base_url=base_url
+    )
+
+    try:
+        send_smtp_email(
+            to_email=target_email,
+            subject=tmpl.get('subject', 'Security Notice'),
+            html_content=html_email,
+            text_content=f"{tmpl.get('body', '')}\n\nDrill Link: {drill_url}",
+            from_name=tmpl.get('fromName') or drill.get('title', 'Cyber Defense Team'),
+            from_email=sender_email
+        )
+        cursor.execute("UPDATE drills SET status = 'dispatched', reaction_time_seconds = NULL WHERE id = ?", (drill_record['id'],))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": f"Phishing simulation email re-delivered to {target_email} via DirectAdmin SMTP."})
+    except Exception as e:
+        conn.close()
+        return jsonify({"success": False, "message": f"Delivery failed: {e}"}), 500
 
 
 @app.route('/api/admin/drills/<drill_id>', methods=['DELETE'])

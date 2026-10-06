@@ -103,7 +103,22 @@ Menteko Bank Security Team`,
     estimatedMinutes: 4,
     description:
       'Interact with a simulated smartphone receiving an urgent CBE Birr KYC lockout alert. Inspect the incoming shortcode, test the fake KYC form, and dial the official 951 helpline simulator.',
-    serverEmailSupport: false,
+    serverEmailSupport: true,
+    emailTemplate: {
+      fromName: 'CBE Birr Security Support',
+      fromEmail: 'security-alerts@savethegeneration.com.et',
+      subject: 'Urgent Alert: Your CBE Birr Mobile Account is Temporarily Suspended',
+      body: `Dear CBE Customer,
+
+Our system detected an incomplete KYC verification status on your CBE Birr mobile banking account.
+
+To prevent immediate restriction of incoming and outgoing fund transfers, please verify your customer identity profile immediately using the link below.
+
+Failure to verify within 2 hours will result in automatic service termination.
+
+Commercial Bank of Ethiopia Security Operations`,
+      callToAction: 'Verify CBE Birr Profile Now',
+    },
     smsContent: {
       senderDisplay: 'CBE-Birr',
       senderRaw: '+251911448821',
@@ -141,7 +156,20 @@ Menteko Bank Security Team`,
     estimatedMinutes: 3,
     description:
       'A stranger sends a fake SMS screenshot claiming they mistakenly transferred 500 ETB to your phone and urgently needs a refund for hospital bills. Verify the live transaction ledger before deciding.',
-    serverEmailSupport: false,
+    serverEmailSupport: true,
+    emailTemplate: {
+      fromName: 'Telebirr Dispute Center',
+      fromEmail: 'drills@savethegeneration.com.et',
+      subject: 'Dispute Notice: Erroneous Transfer Claim Ref #ETB-89104',
+      body: `Dear Telebirr Customer,
+
+A payment dispute has been filed regarding a recent mobile transfer of 500.00 ETB to your account. The sender claims this transaction was sent in error and has requested an immediate reversal.
+
+Please inspect your active account ledger and review the claim details below:
+
+Telebirr Customer Protection Department`,
+      callToAction: 'Review Disputed Transaction Ledger',
+    },
     walletDetails: {
       initialBalance: 4850.0,
       claimAmount: 500.0,
@@ -177,7 +205,20 @@ Menteko Bank Security Team`,
     estimatedMinutes: 5,
     description:
       'Listen to an urgent voice memo purportedly sent by your CEO requesting an immediate emergency wire transfer to an offshore supplier. Use forensic audio analysis tools to uncover synthetic artifacts.',
-    serverEmailSupport: false,
+    serverEmailSupport: true,
+    emailTemplate: {
+      fromName: 'Office of the Managing Director',
+      fromEmail: 'admin@savethegeneration.com.et',
+      subject: 'Urgent Directive: Confidential Voice Authorization Memo',
+      body: `Dear Finance Operations Team,
+
+Dr. Dawit has forwarded an urgent audio directive regarding an emergency offshore supplier disbursement (150,000 ETB) required before his flight departs.
+
+Please listen to the voice memo immediately and verify payment instructions:
+
+Office of the Managing Director`,
+      callToAction: 'Listen to Executive Audio Memo',
+    },
     audioDetails: {
       executiveName: 'Dr. Dawit (Managing Director)',
       wireAmount: '150,000 ETB ($1,250 USD)',
